@@ -1,0 +1,32 @@
+[
+  {
+    "id": "herbally-neem-bedsheet",
+    "name": "Herbally Pure Neem Infused Organic Bedsheet",
+    "brand": "Herbally",
+    "category": "Herbal Textiles & Wellness Bedding",
+    "price_inr": 3499,
+    "description": "Crafted from 100% GOTS certified organic long-staple cotton and treated with natural Azadirachta indica (Neem) leaf extracts using a proprietary herbal infusion wash. Hypoallergenic, breathable, and naturally antibacterial for restful, skin-friendly sleep without synthetic finishes.",
+    "verified_features": [
+      "100% GOTS-certified organic cotton, 300 Thread Count satin weave",
+      "Infused with natural Neem extracts (Ayurvedic herbal infusion)",
+      "Zero toxic chemical dyes, formaldehyde-free, non-carcinogenic",
+      "Naturally antibacterial and hypoallergenic surface",
+      "Breathable, temperature-regulating natural weave",
+      "Retains botanical properties for up to 30 gentle washes"
+    ],
+    "explicitly_supported_benefits": [
+      "Gentle and soothing on sensitive, acne-prone, or irritated skin",
+      "Helps inhibit microbial odor buildup in bedroom bedding",
+      "Provides natural, breathable night-time comfort and softness",
+      "Environmentally sustainable and biodegradable botanical formulation"
+    ],
+    "prohibited_medical_claims": [
+      "Do not claim it cures eczema, psoriasis, or dermatological diseases",
+      "Do not claim it cures insomnia or clinical sleep disorders",
+      "Do not claim it replaces medical skin treatments"
+    ],
+    "target_audience_hint": "Conscious wellness seekers, eco-luxury lifestyle consumers, Ayurvedic health practitioners, individuals with skin sensitivities, new parents",
+    "official_url": "https://herbally.in/products/neem-infused-bedsheet",
+    "source_verification": "Brand product catalog, lab-tested herbal wash certification (ISO 20743 antimicrobial activity)"
+  }
+]

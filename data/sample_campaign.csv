@@ -1,0 +1,6 @@
+campaign_id,campaign_name,platform,creative_variant,spend,impressions,clicks,conversions,revenue
+CAMP-001,IG-Reel-AcneSafeSleep,Instagram,Reel-UGC-MorningSkin,12500,185000,6290,264,923736
+CAMP-002,Meta-Carousel-FabricComparison,Meta Ads,Carousel-GOTS-vs-Polyester,14000,165000,2970,71,248429
+CAMP-003,Google-Search-AyurvedicBedding,Google Search,SearchAd-PureNeemOrganic,11500,42000,1680,64,223936
+CAMP-004,Meta-Static-LuxuryDecorBanner,Meta Ads,Static-Banner-GenericAesthetic,8500,120000,720,11,38489
+CAMP-005,IG-Story-InfluencerGifting,Instagram,Story-TestimonialCut,3500,48000,1440,58,202942

@@ -1,0 +1,25 @@
+# Environments
+.env
+.venv/
+env/
+venv/
+__pycache__/
+*.pyc
+
+# Database
+*.sqlite3
+*.db
+
+# Node
+node_modules/
+dist/
+.vite/
+
+# Reports
+reports/*.pdf
+reports/*.json
+
+# Logs
+*.log
+.coverage
+.pytest_cache/
