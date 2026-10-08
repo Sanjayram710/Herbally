@@ -3,7 +3,7 @@ from pydantic import BaseModel, Field
 
 
 class EpistemicSource(BaseModel):
-    category: str = Field(description="VERIFIED_FACT | EXTERNAL_RESEARCH | AI_RECOMMENDATION | ASSUMPTION_OR_ESTIMATE")
+    category: str = Field(description="VERIFIED_FACT | RESEARCH_FINDING | AI_INFERENCE | MARKETING_SUGGESTION | ASSUMPTION | SIMULATED_DATA")
     description: str
     source_reference: Optional[str] = None
     confidence_level: Optional[str] = "HIGH"  # HIGH | MEDIUM | LOW
@@ -122,16 +122,30 @@ class AdCopyVariant(BaseModel):
     target_angle: str
 
 
+class MarketingAssetBundle(BaseModel):
+    """Specific campaign-ready marketing assets (Section 5.2)."""
+    instagram_post: Dict[str, Any] = Field(default_factory=dict)
+    instagram_reel_script: Dict[str, Any] = Field(default_factory=dict)
+    meta_ad_copy: Dict[str, Any] = Field(default_factory=dict)
+    google_search_ad: Dict[str, Any] = Field(default_factory=dict)
+    email_marketing: Dict[str, Any] = Field(default_factory=dict)
+    blog_seo_content: Dict[str, Any] = Field(default_factory=dict)
+    cta_variants: List[str] = Field(default_factory=list)
+    headline_variants: List[str] = Field(default_factory=list)
+
+
 class ContentStrategyOutput(BaseModel):
-    instagram_ideas: List[str]
-    reels_concepts: List[str]
-    youtube_video_ideas: List[str]
-    ad_copy_variations: List[AdCopyVariant]
-    weekly_content_calendar: List[Dict[str, str]]
-    email_flow_concepts: List[str]
+    instagram_ideas: List[str] = Field(default_factory=list)
+    reels_concepts: List[str] = Field(default_factory=list)
+    youtube_video_ideas: List[str] = Field(default_factory=list)
+    ad_copy_variations: List[AdCopyVariant] = Field(default_factory=list)
+    weekly_content_calendar: List[Dict[str, str]] = Field(default_factory=list)
+    email_flow_concepts: List[str] = Field(default_factory=list)
+    asset_bundle: Optional[MarketingAssetBundle] = None
 
 
 class CampaignPlanItem(BaseModel):
+    id: str = "CAMP-001"
     campaign_name: str
     platform: str
     objective: str
@@ -140,9 +154,14 @@ class CampaignPlanItem(BaseModel):
     messaging: str
     call_to_action: str
     budget_inr: float
-    duration_days: int
-    primary_kpis: List[str]
-    execution_status: str = "SIMULATED_PENDING_APPROVAL"
+    duration_days: int = 30
+    primary_kpis: List[str] = Field(default_factory=list)
+    
+    # Lifecycle: DRAFT | PENDING_APPROVAL | APPROVED | SIMULATED_RUNNING | COMPLETED | OPTIMIZED
+    status: str = "PENDING_APPROVAL"
+    iteration_number: int = 1
+    linked_assets: Dict[str, Any] = Field(default_factory=dict)
+    kpi_targets: Dict[str, Any] = Field(default_factory=dict)
 
 
 class MetricRow(BaseModel):
@@ -160,6 +179,7 @@ class MetricRow(BaseModel):
     conv_rate: float
     cpa: float
     roas: float
+    is_simulated: str = "SIMULATED DATA"
 
 
 class AnalyticsOutput(BaseModel):
@@ -173,7 +193,10 @@ class AnalyticsOutput(BaseModel):
     overall_conv_rate: float = 0.0
     overall_cpa: float = 0.0
     overall_roas: float = 0.0
-    top_performing_campaign: Optional[str] = None
+    best_campaign: Optional[str] = None
+    best_creative: Optional[str] = None
+    best_audience: Optional[str] = None
+    best_channel: Optional[str] = None
     underperforming_campaign: Optional[str] = None
     campaign_rows: List[MetricRow] = Field(default_factory=list)
     interpretation: str = ""
@@ -195,6 +218,7 @@ class NextBestAction(BaseModel):
     action: str
     reason: str
     expected_impact: str
+    next_campaign_iteration: Optional[Dict[str, Any]] = None
 
 
 class MarketingState(BaseModel):
@@ -206,6 +230,7 @@ class MarketingState(BaseModel):
     marketing_goal: str = "Increase online sales"
     budget: float = 50000.0
     duration_days: int = 30
+    current_iteration: int = 1
     
     # Discovery & Understanding
     product: Optional[ProductUnderstanding] = None
@@ -213,13 +238,13 @@ class MarketingState(BaseModel):
     competitors: List[CompetitorProfile] = Field(default_factory=list)
     audience_analysis: List[TargetPersona] = Field(default_factory=list)
     
-    # Strategic Planning
+    # Strategic Planning & Assets
     strategy: Optional[StrategyOutput] = None
     seo_strategy: Optional[SeoStrategyOutput] = None
     content_strategy: Optional[ContentStrategyOutput] = None
     campaign_plan: List[CampaignPlanItem] = Field(default_factory=list)
     
-    # Analytics & Measurement
+    # Execution & Simulation
     campaign_data_loaded: bool = False
     analytics: Optional[AnalyticsOutput] = None
     

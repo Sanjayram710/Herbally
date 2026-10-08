@@ -10,7 +10,7 @@ class Settings(BaseSettings):
     HOST: str = "0.0.0.0"
     
     # Database
-    DATABASE_URL: str = "sqlite:///./marketing.db"
+    DATABASE_URL: str = "sqlite:///./marketing_v2.db"
     
     # Providers
     LLM_PROVIDER: str = "mock"  # "mock" | "openai" | "gemini"

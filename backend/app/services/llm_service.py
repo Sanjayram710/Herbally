@@ -9,6 +9,7 @@ from app.schemas.state import (
     SeoStrategyOutput,
     SeoKeywordItem,
     ContentStrategyOutput,
+    MarketingAssetBundle,
     AdCopyVariant,
     CampaignPlanItem,
     ProductUnderstanding
@@ -78,11 +79,6 @@ class LLMService:
         Creates positioning, objectives, channel distribution, and KPI framework.
         Budget allocation is mathematically constrained to match total budget exactly.
         """
-        # Constrained budget distribution:
-        # Meta/Instagram Ads: 50%
-        # Google Search (High intent): 25%
-        # Influencer Gifting & Micro-Creator UGC: 15%
-        # Content SEO & Lifecycle: 10%
         channels = [
             ChannelRecommendation(
                 channel="Instagram & Meta Ads",
@@ -107,7 +103,7 @@ class LLMService:
             ),
             ChannelRecommendation(
                 channel="Organic Content, SEO & Email Flow",
-                funnel_stage="Retention & Organic Organic Discovery",
+                funnel_stage="Retention & Organic Discovery",
                 budget_share_pct=10.0,
                 budget_allocated_inr=round(budget * 0.10, 2),
                 rationale_why="Builds long-term organic authority around sleep hygiene and botanical textiles while setting up automated post-purchase welcome and care sequences."
@@ -197,7 +193,10 @@ class LLMService:
         )
 
     def generate_content_and_ads(self, product: ProductUnderstanding) -> ContentStrategyOutput:
-        """Generates social concepts, weekly calendar, and 3 distinct ad copy variations."""
+        """
+        Generates social concepts, weekly calendar, 3 ad copy variations,
+        AND the complete 8-part MarketingAssetBundle (Section 5.2).
+        """
         ad_variants = [
             AdCopyVariant(
                 platform="Instagram & Meta Feed",
@@ -235,6 +234,78 @@ class LLMService:
             {"Day": "Sunday", "Focus": "Lifestyle & Gifting", "Format": "Reel", "Concept": "Sunday morning in pure botanical luxury: The ultimate slow living bedroom"}
         ]
 
+        # Specific Campaign-Ready Asset Bundle (Section 5.2)
+        asset_bundle = MarketingAssetBundle(
+            instagram_post={
+                "caption": "Your skin spends 8 hours resting directly on your bedsheets every single night. 🌿\n\nWhen sheets trap heat and bedroom humidity, your skin pays the price. Meet Herbally: 100% GOTS certified organic long-staple cotton infused with pure Ayurvedic Neem extracts. Naturally breathable, skin-soothing, and antibacterial for calm morning skin.\n\n✨ Certified 300 Thread Count Satin Weave\n✨ Zero toxic synthetic dyes\n✨ Retains botanical wash properties for up to 30 gentle washes\n\nTap the link in bio to transform your bedtime sanctuary.",
+                "hashtags": ["#HerballyBedding", "#CleanSleep", "#OrganicCottonIndia", "#AyurvedicLiving", "#SkinWellness", "#SlowLivingBedroom"],
+                "image_concept": "High-key morning bedroom aesthetic: warm sunlight hitting ivory organic neem bedsheets with a single branch of fresh neem leaves beside a ceramic matcha cup."
+            },
+            instagram_reel_script={
+                "hook": "Stop spending ₹4,000 on night creams if your bedsheets are harboring nighttime sweat and bacteria.",
+                "scenes": [
+                    {"second": "0-3s", "visual": "Close-up of woman washing her face with gentle cleanser, looking frustrated at morning redness.", "text_overlay": "Night cream vs. Your Bedding"},
+                    {"second": "3-8s", "visual": "Hands caressing the silky 300 TC organic satin cotton sheets; fresh neem leaves shown on wooden surface.", "text_overlay": "100% GOTS Organic Cotton + Pure Neem Infusion"},
+                    {"second": "8-14s", "visual": "Tucking into crisp, breathable ivory bedsheets, peaceful smile, soft ambient bedroom lighting.", "text_overlay": "Gentle, antibacterial sleep comfort"},
+                    {"second": "14-20s", "visual": "Product unboxing with organic tote bag and certification badge.", "text_overlay": "Herbally.in • Free Shipping across India"}
+                ],
+                "voiceover": "You spend 8 hours every night in direct skin contact with your pillow and sheets. If they trap heat and humidity, your skin flares up. Herbally infuses natural Neem botanicals into certified organic cotton. It's breathable, naturally antibacterial, and deeply calming.",
+                "audio_vibe": "Calm lofi acoustic guitar or soothing ambient meditation tones"
+            },
+            meta_ad_copy={
+                "headline": "Wake Up with Calmer Skin: Organic Neem Bedding",
+                "primary_text": "Tired of waking up with irritated skin and night sweating? Conventional sheets are treated with harsh anti-wrinkle chemicals. Herbally is woven from 100% GOTS-certified organic cotton and infused with pure Neem leaf extracts. Hypoallergenic, breathable, and crafted for restorative sleep.",
+                "call_to_action": "Shop Now — Free Shipping in India"
+            },
+            google_search_ad={
+                "headlines": [
+                    "Pure Neem Infused Bedsheets | 100% Organic GOTS Cotton",
+                    "Antibacterial Herbal Bedding | Skin-Friendly Sleep India",
+                    "Herbally Organic Sheets | Zero Toxic Chemical Dyes"
+                ],
+                "descriptions": [
+                    "Naturally antibacterial & breathable. Crafted from 100% GOTS organic cotton infused with Neem.",
+                    "Experience restful, skin-soothing sleep. Free shipping across India. Order today!"
+                ],
+                "sitelinks": [
+                    {"title": "GOTS Certified Organic", "desc": "300 Thread Count Satin Weave"},
+                    {"title": "Neem Infusion Science", "desc": "Natural Botanical Wash"},
+                    {"title": "Care & Wash Guide", "desc": "Lasts 30+ Gentle Washes"},
+                    {"title": "Customer Reviews", "desc": "Verified 4.8-Star Ratings"}
+                ]
+            },
+            email_marketing={
+                "subject_line": "🌿 Your skin's nightly sanctuary has arrived",
+                "preview_text": "Why your bedding matters more than your nighttime skincare routine...",
+                "body_markdown": "### Dear Sleeper,\n\nConsider this: you spend a third of your life with your skin pressed directly against your sheets.\n\nMost conventional bedding is treated with synthetic finishes that trap humidity and bedroom bacteria. That's why we created the **Herbally Pure Neem Infused Bedsheet**.\n\n- **100% GOTS Organic Cotton**: 300 TC breathable satin weave\n- **Natural Neem Wash**: Traditional Ayurvedic botanicals that gently soothe sensitive skin\n- **Zero Toxic Dyes**: Pure, safe, and chemical-free\n\nReady to transform your restorative sleep?\n\n[Explore The Collection →](https://herbally.in)",
+                "cta_text": "Explore The Herbal Collection"
+            },
+            blog_seo_content={
+                "title": "The Bedtime Microbiome: Why Your Sheets Matter More for Skin Clarity Than Your Night Cream",
+                "target_keyword": "antibacterial bedsheets for sensitive skin",
+                "outline_sections": [
+                    "1. Nocturnal Skin Respiration: How tropical humidity affects night-time skin health",
+                    "2. The Problem with Synthetic Blends: Heat trapping and bacterial proliferation",
+                    "3. Traditional Neem Botanicals: Nature's time-tested purifying antimicrobial",
+                    "4. Certified Organic Textiles: What GOTS certification guarantees for non-toxic living"
+                ]
+            },
+            cta_variants=[
+                "Shop Pure Neem Bedding — Free Shipping in India",
+                "Upgrade Your Bedtime Skin Hygiene",
+                "Experience Botanical Comfort Tonight",
+                "Explore GOTS Certified Herbal Bedding",
+                "Order Now with 100% Comfort Guarantee"
+            ],
+            headline_variants=[
+                "Your Night Cream Deserves Better Bedding.",
+                "Experience the Night-time Purity of Pure Neem Botanicals.",
+                "Zero Toxic Chemicals. 100% Certified Organic Cotton.",
+                "Deep Recovery Sleep Powered by Nature.",
+                "Breathable Luxury Crafted for Sensitive Skin."
+            ]
+        )
+
         return ContentStrategyOutput(
             instagram_ideas=[
                 "Macro photography of raw organic cotton vs neem infusion extraction wash.",
@@ -256,7 +327,8 @@ class LLMService:
                 "Welcome Flow Email 1: Welcome to Herbal Sleep — The story behind our Neem harvest.",
                 "Welcome Flow Email 2: The 30-Wash Care Guide for Botanical Linens.",
                 "Abandon Cart Reminder: Complete your sleep sanctuary — 100% organic neem comfort awaits."
-            ]
+            ],
+            asset_bundle=asset_bundle
         )
 
     def generate_campaign_plan(
@@ -265,9 +337,10 @@ class LLMService:
         budget: float,
         duration_days: int
     ) -> List[CampaignPlanItem]:
-        """Creates the human-reviewable campaign execution plan."""
+        """Creates the human-reviewable campaign execution plan with structured lifecycle."""
         return [
             CampaignPlanItem(
+                id="CAMP-001",
                 campaign_name="CAMP-001: IG-Reel-AcneSafeSleep",
                 platform="Instagram",
                 objective="Conversions (Sales)",
@@ -278,9 +351,13 @@ class LLMService:
                 budget_inr=round(budget * 0.35, 2),
                 duration_days=duration_days,
                 primary_kpis=["ROAS > 3.5x", "CPA < INR 900", "CTR > 2.5%"],
-                execution_status="SIMULATED_PENDING_APPROVAL"
+                status="PENDING_APPROVAL",
+                iteration_number=1,
+                linked_assets={"creative_format": "Reel Script", "hook": "Stop spending ₹4,000 on night creams..."},
+                kpi_targets={"target_roas": 3.5, "target_cpa": 900.0, "target_ctr": 2.5}
             ),
             CampaignPlanItem(
+                id="CAMP-002",
                 campaign_name="CAMP-002: Meta-Carousel-FabricComparison",
                 platform="Meta Ads",
                 objective="Catalog Sales / Conversions",
@@ -291,9 +368,13 @@ class LLMService:
                 budget_inr=round(budget * 0.25, 2),
                 duration_days=duration_days,
                 primary_kpis=["CTR > 1.8%", "CPA < INR 1,200", "Add-to-Cart Rate > 6%"],
-                execution_status="SIMULATED_PENDING_APPROVAL"
+                status="PENDING_APPROVAL",
+                iteration_number=1,
+                linked_assets={"creative_format": "Carousel 3-Slide", "theme": "Chemicals vs Botanical"},
+                kpi_targets={"target_roas": 2.8, "target_cpa": 1200.0, "target_ctr": 1.8}
             ),
             CampaignPlanItem(
+                id="CAMP-003",
                 campaign_name="CAMP-003: Google-Search-AyurvedicBedding",
                 platform="Google Search",
                 objective="Search Conversions",
@@ -304,9 +385,13 @@ class LLMService:
                 budget_inr=round(budget * 0.25, 2),
                 duration_days=duration_days,
                 primary_kpis=["Conversion Rate > 3.5%", "CPC < INR 35", "ROAS > 3.0x"],
-                execution_status="SIMULATED_PENDING_APPROVAL"
+                status="PENDING_APPROVAL",
+                iteration_number=1,
+                linked_assets={"creative_format": "Responsive Search Text", "keywords": "organic neem bedsheet india"},
+                kpi_targets={"target_roas": 3.2, "target_cpa": 950.0, "target_ctr": 3.8}
             ),
             CampaignPlanItem(
+                id="CAMP-004",
                 campaign_name="CAMP-004: IG-Story-InfluencerRetargeting",
                 platform="Instagram",
                 objective="Retargeting / Conversions",
@@ -317,6 +402,9 @@ class LLMService:
                 budget_inr=round(budget * 0.15, 2),
                 duration_days=duration_days,
                 primary_kpis=["ROAS > 4.0x", "Frequency < 3.5", "CPA < INR 800"],
-                execution_status="SIMULATED_PENDING_APPROVAL"
+                status="PENDING_APPROVAL",
+                iteration_number=1,
+                linked_assets={"creative_format": "Story Testimonial", "angle": "Warm Audience Retargeting"},
+                kpi_targets={"target_roas": 4.0, "target_cpa": 800.0, "target_ctr": 2.8}
             )
         ]

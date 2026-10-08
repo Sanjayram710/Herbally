@@ -1,20 +1,77 @@
 import React from "react";
-import { ArrowRight, ShieldCheck, HelpCircle } from "lucide-react";
-import type { OptimizationRecommendation, EpistemicSource, AssumptionItem } from "../types";
+import { ArrowRight, ShieldCheck, HelpCircle, Repeat, Rocket } from "lucide-react";
+import type { OptimizationRecommendation, EpistemicSource, AssumptionItem, NextBestAction } from "../types";
 
 interface OptimizationSectionProps {
   recommendations: OptimizationRecommendation[];
+  nextBestAction: NextBestAction | null | undefined;
   sources: EpistemicSource[];
   assumptions: AssumptionItem[];
+  currentIteration: number;
+  onIterateCampaign: () => Promise<void>;
+  isLoading: boolean;
 }
 
 export const OptimizationSection: React.FC<OptimizationSectionProps> = ({
   recommendations,
+  nextBestAction,
   sources,
   assumptions,
+  currentIteration,
+  onIterateCampaign,
+  isLoading,
 }) => {
+  const nextIter = nextBestAction?.next_campaign_iteration;
+
   return (
     <div style={{ marginTop: "24px", display: "flex", flexDirection: "column", gap: "28px" }}>
+      {/* Closed-Loop Action Banner */}
+      {nextIter && (
+        <div className="glass-panel pulse-glow" style={{
+          background: "linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(6, 182, 212, 0.15) 100%)",
+          border: "1px solid rgba(16, 185, 129, 0.5)",
+          borderRadius: "16px",
+          padding: "24px"
+        }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "12px", flexWrap: "wrap", gap: "10px" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+              <div style={{ padding: "8px", borderRadius: "10px", background: "rgba(16, 185, 129, 0.2)", color: "#10b981" }}>
+                <Repeat size={22} />
+              </div>
+              <div>
+                <span style={{ fontSize: "0.75rem", textTransform: "uppercase", letterSpacing: "0.08em", color: "#34d399", fontWeight: 700 }}>
+                  CLOSED-LOOP MARKETING AGENT ENGINE
+                </span>
+                <h3 style={{ fontSize: "1.25rem", color: "#ffffff", fontWeight: 700 }}>
+                  Deploy Next-Best Campaign Iteration (Iteration {currentIteration + 1})
+                </h3>
+              </div>
+            </div>
+
+            <button
+              className="btn-primary"
+              onClick={() => onIterateCampaign()}
+              disabled={isLoading}
+              style={{ padding: "12px 24px", fontSize: "0.95rem" }}
+            >
+              <Rocket size={17} />
+              {isLoading ? "Generating Iteration..." : `Create Campaign Iteration ${currentIteration + 1} →`}
+            </button>
+          </div>
+
+          <p style={{ fontSize: "0.88rem", color: "var(--text-secondary)", marginBottom: "16px", lineHeight: 1.5 }}>
+            The agent has analyzed campaign results and generated a refined follow-up strategy: scaling budget by +30% on the top-performing UGC Reel creative, introducing 3 new hook angles, and eliminating spend on underperforming banners.
+          </p>
+
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "12px", background: "rgba(0,0,0,0.3)", padding: "14px", borderRadius: "10px", fontSize: "0.82rem" }}>
+            <div><strong>Iterated Campaign:</strong> {nextIter.campaign_name}</div>
+            <div><strong>Platform:</strong> {nextIter.platform}</div>
+            <div><strong>Scaled Budget:</strong> INR {Number(nextIter.budget_inr).toLocaleString()}</div>
+            <div><strong>Target ROAS:</strong> {nextIter.kpi_targets?.target_roas}x</div>
+          </div>
+        </div>
+      )}
+
       {/* Optimization Recommendations List */}
       <div className="glass-panel" style={{ padding: "24px" }}>
         <h3 style={{ fontSize: "1.2rem", color: "#ffffff", marginBottom: "8px" }}>

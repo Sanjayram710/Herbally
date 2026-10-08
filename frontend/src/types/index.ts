@@ -1,5 +1,5 @@
 export interface EpistemicSource {
-  category: "VERIFIED_FACT" | "EXTERNAL_RESEARCH" | "AI_RECOMMENDATION" | "ASSUMPTION_OR_ESTIMATE";
+  category: "VERIFIED_FACT" | "RESEARCH_FINDING" | "AI_INFERENCE" | "MARKETING_SUGGESTION" | "ASSUMPTION" | "SIMULATED_DATA" | string;
   description: string;
   source_reference?: string;
   confidence_level?: "HIGH" | "MEDIUM" | "LOW";
@@ -112,6 +112,35 @@ export interface AdCopyVariant {
   target_angle: string;
 }
 
+export interface MarketingAssetBundle {
+  instagram_post: { caption?: string; hashtags?: string[]; image_concept?: string };
+  instagram_reel_script: {
+    hook?: string;
+    scenes?: { second: string; visual: string; text_overlay: string }[];
+    voiceover?: string;
+    audio_vibe?: string;
+  };
+  meta_ad_copy: { headline?: string; primary_text?: string; call_to_action?: string };
+  google_search_ad: {
+    headlines?: string[];
+    descriptions?: string[];
+    sitelinks?: { title: string; desc: string }[];
+  };
+  email_marketing: {
+    subject_line?: string;
+    preview_text?: string;
+    body_markdown?: string;
+    cta_text?: string;
+  };
+  blog_seo_content: {
+    title?: string;
+    target_keyword?: string;
+    outline_sections?: string[];
+  };
+  cta_variants: string[];
+  headline_variants: string[];
+}
+
 export interface ContentStrategyOutput {
   instagram_ideas: string[];
   reels_concepts: string[];
@@ -119,9 +148,11 @@ export interface ContentStrategyOutput {
   ad_copy_variations: AdCopyVariant[];
   weekly_content_calendar: { Day: string; Focus: string; Format: string; Concept: string }[];
   email_flow_concepts: string[];
+  asset_bundle?: MarketingAssetBundle;
 }
 
 export interface CampaignPlanItem {
+  id: string;
   campaign_name: string;
   platform: string;
   objective: string;
@@ -132,7 +163,10 @@ export interface CampaignPlanItem {
   budget_inr: number;
   duration_days: number;
   primary_kpis: string[];
-  execution_status: string;
+  status: "DRAFT" | "PENDING_APPROVAL" | "APPROVED" | "SIMULATED_RUNNING" | "COMPLETED" | "OPTIMIZED" | string;
+  iteration_number?: number;
+  linked_assets?: Record<string, any>;
+  kpi_targets?: Record<string, any>;
 }
 
 export interface MetricRow {
@@ -150,6 +184,7 @@ export interface MetricRow {
   conv_rate: number;
   cpa: number;
   roas: number;
+  is_simulated?: string;
 }
 
 export interface AnalyticsOutput {
@@ -163,7 +198,10 @@ export interface AnalyticsOutput {
   overall_conv_rate: number;
   overall_cpa: number;
   overall_roas: number;
-  top_performing_campaign?: string;
+  best_campaign?: string;
+  best_creative?: string;
+  best_audience?: string;
+  best_channel?: string;
   underperforming_campaign?: string;
   campaign_rows: MetricRow[];
   interpretation: string;
@@ -185,6 +223,7 @@ export interface NextBestAction {
   action: string;
   reason: string;
   expected_impact: string;
+  next_campaign_iteration?: Record<string, any>;
 }
 
 export interface MarketingState {
@@ -195,6 +234,7 @@ export interface MarketingState {
   marketing_goal: string;
   budget: number;
   duration_days: number;
+  current_iteration: number;
   product?: ProductUnderstanding;
   research?: MarketResearchOutput;
   competitors: CompetitorProfile[];

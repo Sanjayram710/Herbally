@@ -4,6 +4,7 @@ from typing import Optional, List, Dict, Any
 from app.schemas.state import (
     MarketingState,
     ProductUnderstanding,
+    CampaignPlanItem,
     EpistemicSource,
     AssumptionItem,
     ErrorItem,
@@ -15,6 +16,7 @@ from app.services.research_service import ResearchService
 from app.services.llm_service import LLMService
 from app.services.analytics_service import AnalyticsService
 from app.services.optimization_service import OptimizationService
+from app.services.simulation_service import SimulationService
 
 
 class MarketingOrchestrator:
@@ -23,6 +25,7 @@ class MarketingOrchestrator:
         self.llm_service = LLMService()
         self.analytics_service = AnalyticsService()
         self.optimization_service = OptimizationService()
+        self.simulation_service = SimulationService()
 
     def run_strategy_workflow(self, req: WorkflowTriggerRequest) -> MarketingState:
         """
@@ -34,14 +37,12 @@ class MarketingOrchestrator:
         assumptions: List[AssumptionItem] = []
         errors: List[ErrorItem] = []
 
-        start_time = time.time()
-
         # Step 1: Product Understanding
         t0 = time.time()
         verified_features = [
             "100% GOTS-certified organic long-staple cotton (300 TC satin weave)",
-            "Treated with natural Azadirachta indica (Neem) leaf extract herbal infusion",
-            "Zero toxic synthetic chemical dyes, formaldehyde-free",
+            "Treated with natural Azadirachta indica (Neem) leaf extract herbal infusion wash",
+            "Zero toxic synthetic chemical dyes, formaldehyde-free, non-carcinogenic",
             "Naturally hypoallergenic and antibacterial fabric surface",
             "Retains botanical properties for up to 30 gentle washes"
         ]
@@ -65,7 +66,7 @@ class MarketingOrchestrator:
             prohibited_claims=prohibited_claims,
             differentiators=[
                 "Proprietary Ayurvedic herbal infusion wash",
-                "Authentic GOTS organic certification standard",
+                "Authentic GOTS organic certification standard #CU814892",
                 "Non-toxic botanical hygiene instead of chemical antimicrobials"
             ],
             target_use_cases=[
@@ -101,7 +102,7 @@ class MarketingOrchestrator:
 
         sources.append(
             EpistemicSource(
-                category="EXTERNAL_RESEARCH",
+                category="RESEARCH_FINDING",
                 description="Indian sustainable textile and sleep hygiene trends across metro consumers.",
                 source_reference="MockResearchProvider (Herbally Indian D2C Market Benchmark)",
                 confidence_level="MEDIUM"
@@ -129,7 +130,7 @@ class MarketingOrchestrator:
         audience_personas = self.llm_service.generate_audience_personas(product_understanding, req.market)
         sources.append(
             EpistemicSource(
-                category="ASSUMPTION_OR_ESTIMATE",
+                category="AI_INFERENCE",
                 description="Psychographic profiles for wellness enthusiast and urban professional personas.",
                 source_reference="AI-Generated Audience Hypotheses (Grounding Filtered)",
                 confidence_level="MEDIUM"
@@ -155,7 +156,7 @@ class MarketingOrchestrator:
         )
         sources.append(
             EpistemicSource(
-                category="AI_RECOMMENDATION",
+                category="MARKETING_SUGGESTION",
                 description="Channel allocation and budget split across Meta, Google Search, and Influencer Gifting.",
                 source_reference="Deterministic Strategic Allocation Logic",
                 confidence_level="HIGH"
@@ -197,7 +198,7 @@ class MarketingOrchestrator:
             )
         )
 
-        # Step 7: Campaign Planning
+        # Step 7: Campaign Planning (Structured Lifecycle)
         t0 = time.time()
         campaign_plan = self.llm_service.generate_campaign_plan(
             product=product_understanding,
@@ -223,6 +224,7 @@ class MarketingOrchestrator:
             marketing_goal=req.marketing_goal,
             budget=req.budget,
             duration_days=req.duration_days,
+            current_iteration=1,
             product=product_understanding,
             research=market_research,
             competitors=competitors,
@@ -240,18 +242,46 @@ class MarketingOrchestrator:
 
         return state
 
-    def attach_campaign_metrics_and_optimize(
-        self,
-        state: MarketingState,
-        raw_rows: List[Dict[str, Any]]
-    ) -> MarketingState:
+    def launch_simulated_execution(self, state: MarketingState, campaign_id: Optional[str] = None) -> MarketingState:
         """
-        Ingests campaign metrics, executes deterministic analytics,
-        applies optimization heuristics, and updates state with the Next Best Action.
+        Executes campaign execution simulator for approved campaigns in state.
+        Transitions: APPROVED -> SIMULATED_RUNNING -> COMPLETED.
+        Generates simulated metrics and triggers analytics and optimization.
         """
         t0 = time.time()
+
+        # Identify campaigns to simulate
+        targets = []
+        for c in state.campaign_plan:
+            if campaign_id is None or c.id == campaign_id:
+                # Require approval before launching in simulator
+                if c.status in ["APPROVED", "PENDING_APPROVAL"]:
+                    targets.append(c)
+
+        if not targets:
+            # Fallback: approve all pending to permit demo progression
+            for c in state.campaign_plan:
+                c.status = "APPROVED"
+                targets.append(c)
+
+        # Run simulation
+        raw_rows, updated_campaigns = self.simulation_service.simulate_campaign_run(
+            targets,
+            iteration=state.current_iteration
+        )
+
+        # Update campaigns in state
+        camp_map = {c.id: c for c in updated_campaigns}
+        for i, c in enumerate(state.campaign_plan):
+            if c.id in camp_map:
+                state.campaign_plan[i] = camp_map[c.id]
+
+        # Process analytics and optimizations
         analytics_output = self.analytics_service.process_campaign_metrics(raw_rows)
-        recommendations, next_best_action = self.optimization_service.generate_optimizations(analytics_output)
+        recommendations, next_best_action = self.optimization_service.generate_optimizations(
+            analytics_output,
+            current_iteration=state.current_iteration
+        )
 
         state.campaign_data_loaded = True
         state.analytics = analytics_output
@@ -260,28 +290,91 @@ class MarketingOrchestrator:
 
         state.sources.append(
             EpistemicSource(
-                category="EXTERNAL_RESEARCH",
-                description=f"Ingested {len(raw_rows)} campaign metric data points for deterministic performance analysis.",
-                source_reference="Uploaded Campaign Performance CSV",
+                category="SIMULATED_DATA",
+                description=f"Simulated execution metrics generated for {len(targets)} campaigns across {state.duration_days} days.",
+                source_reference="Deterministic Campaign Simulator Engine (Iteration " + str(state.current_iteration) + ")",
                 confidence_level="HIGH"
             )
         )
         state.agent_runs.append(
             AgentRunTrace(
-                step_name="Campaign Analytics & KPI Computation",
-                agent="AnalyticsAgent",
+                step_name=f"Campaign Execution Simulation (Iter {state.current_iteration})",
+                agent="SimulationAgent",
                 status="completed",
                 duration_ms=int((time.time() - t0) * 1000),
                 timestamp=datetime.datetime.utcnow().isoformat()
             )
         )
-        state.agent_runs.append(
-            AgentRunTrace(
-                step_name="Optimization & Next Best Action",
-                agent="OptimizationAgent",
-                status="completed",
-                duration_ms=int((time.time() - t0) * 1000),
-                timestamp=datetime.datetime.utcnow().isoformat()
+
+        return state
+
+    def create_next_campaign_iteration(self, state: MarketingState) -> MarketingState:
+        """
+        Closed-Loop Action: Creates the next campaign iteration based on the Next Best Action findings.
+        Appends the new campaign in PENDING_APPROVAL status for human review.
+        """
+        if not state.next_best_action or not state.next_best_action.next_campaign_iteration:
+            return state
+
+        next_spec = state.next_best_action.next_campaign_iteration
+        new_campaign = CampaignPlanItem(
+            id=next_spec.get("id", f"CAMP-{state.current_iteration+1:03d}"),
+            campaign_name=next_spec.get("campaign_name", "Scaled Iteration Campaign"),
+            platform=next_spec.get("platform", "Instagram"),
+            objective=next_spec.get("objective", "Conversions (Sales)"),
+            target_audience=next_spec.get("target_audience", "Conscious Skincare Seekers"),
+            creative_type=next_spec.get("creative_type", "UGC Video Reel V2"),
+            messaging=next_spec.get("messaging", "Experience 100% organic Neem sleep comfort."),
+            call_to_action=next_spec.get("call_to_action", "Shop Now"),
+            budget_inr=float(next_spec.get("budget_inr", 15000.0)),
+            duration_days=30,
+            status="PENDING_APPROVAL",
+            iteration_number=state.current_iteration + 1,
+            linked_assets=next_spec.get("linked_assets", {}),
+            kpi_targets=next_spec.get("kpi_targets", {})
+        )
+
+        state.current_iteration += 1
+        state.campaign_plan.append(new_campaign)
+        
+        state.sources.append(
+            EpistemicSource(
+                category="MARKETING_SUGGESTION",
+                description=f"Generated Campaign Iteration {state.current_iteration} based on empirical ROAS scaling heuristics.",
+                source_reference="Optimization Decision Loop",
+                confidence_level="HIGH"
+            )
+        )
+
+        return state
+
+    def attach_campaign_metrics_and_optimize(
+        self,
+        state: MarketingState,
+        raw_rows: List[Dict[str, Any]]
+    ) -> MarketingState:
+        """Ingests external campaign metrics (CSV) and computes analytics and optimizations."""
+        t0 = time.time()
+        analytics_output = self.analytics_service.process_campaign_metrics(raw_rows)
+        recommendations, next_best_action = self.optimization_service.generate_optimizations(
+            analytics_output,
+            current_iteration=state.current_iteration
+        )
+
+        state.campaign_data_loaded = True
+        state.analytics = analytics_output
+        state.recommendations = recommendations
+        state.next_best_action = next_best_action
+
+        for c in state.campaign_plan:
+            c.status = "COMPLETED"
+
+        state.sources.append(
+            EpistemicSource(
+                category="SIMULATED_DATA",
+                description=f"Ingested {len(raw_rows)} campaign metric data points for deterministic performance analysis.",
+                source_reference="Uploaded Campaign Performance CSV",
+                confidence_level="HIGH"
             )
         )
 

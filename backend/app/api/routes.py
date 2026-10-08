@@ -1,11 +1,11 @@
 import uuid
 import json
 from typing import List, Dict, Any, Optional
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form, Response
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form, Response, Body
 from sqlalchemy.orm import Session
 
 from app.database import get_db
-from app.models import Product, WorkflowRun, Recommendation, CampaignMetric
+from app.models import Product, WorkflowRun, Recommendation, CampaignMetric, Campaign as CampaignModel
 from app.schemas.product import ProductCreate, ProductRead, WorkflowTriggerRequest
 from app.schemas.analytics import CampaignRowInput, CampaignDataUploadResponse
 from app.schemas.state import MarketingState
@@ -157,7 +157,113 @@ def get_workflow_state(workflow_id: str, db: Session = Depends(get_db)):
 
 
 # ==========================================
-# 3. Analytics & CSV Upload Endpoints
+# 3. Closed-Loop Campaign Lifecycle Endpoints
+# ==========================================
+
+@router.post("/campaigns/{campaign_id}/approve")
+def approve_campaign(
+    campaign_id: str,
+    payload: Dict[str, Any] = Body(...),
+    db: Session = Depends(get_db)
+):
+    """Human approval action transitioning campaign to APPROVED status."""
+    workflow_id = payload.get("workflow_id")
+    if not workflow_id:
+        raise HTTPException(status_code=400, detail="workflow_id is required")
+
+    wf = db.query(WorkflowRun).filter(WorkflowRun.id == workflow_id).first()
+    if not wf or not wf.state_snapshot:
+        raise HTTPException(status_code=404, detail="Workflow run not found")
+
+    state = MarketingState.model_validate(wf.state_snapshot)
+    matched = False
+    for c in state.campaign_plan:
+        if c.id == campaign_id or campaign_id == "all":
+            c.status = "APPROVED"
+            matched = True
+
+    if not matched:
+        raise HTTPException(status_code=404, detail="Campaign not found in workflow")
+
+    wf.state_snapshot = state.model_dump()
+    db.commit()
+
+    return {
+        "workflow_id": workflow_id,
+        "campaign_id": campaign_id,
+        "status": "APPROVED",
+        "state": state.model_dump()
+    }
+
+
+@router.post("/campaigns/launch")
+def launch_simulated_campaign(
+    payload: Dict[str, Any] = Body(...),
+    db: Session = Depends(get_db)
+):
+    """
+    Launches APPROVED campaign(s) in the Simulated Sandbox:
+    Transitions status: APPROVED -> SIMULATED_RUNNING -> COMPLETED.
+    Generates simulated metrics, runs deterministic analytics and optimization.
+    """
+    workflow_id = payload.get("workflow_id")
+    campaign_id = payload.get("campaign_id")
+
+    if not workflow_id:
+        raise HTTPException(status_code=400, detail="workflow_id is required")
+
+    wf = db.query(WorkflowRun).filter(WorkflowRun.id == workflow_id).first()
+    if not wf or not wf.state_snapshot:
+        raise HTTPException(status_code=404, detail="Workflow run not found")
+
+    state = MarketingState.model_validate(wf.state_snapshot)
+    updated_state = orchestrator.launch_simulated_execution(state, campaign_id=campaign_id)
+
+    wf.state_snapshot = updated_state.model_dump()
+    db.commit()
+
+    return {
+        "workflow_id": workflow_id,
+        "status": "COMPLETED",
+        "message": "Campaign successfully executed in Simulated Sandbox.",
+        "state": updated_state.model_dump()
+    }
+
+
+@router.post("/campaigns/iterate")
+def create_next_campaign_iteration(
+    payload: Dict[str, Any] = Body(...),
+    db: Session = Depends(get_db)
+):
+    """
+    Closed-Loop Engine:
+    Uses the Next Best Action findings to generate Campaign Iteration #N+1.
+    Appends the iterated campaign in PENDING_APPROVAL status.
+    """
+    workflow_id = payload.get("workflow_id")
+    if not workflow_id:
+        raise HTTPException(status_code=400, detail="workflow_id is required")
+
+    wf = db.query(WorkflowRun).filter(WorkflowRun.id == workflow_id).first()
+    if not wf or not wf.state_snapshot:
+        raise HTTPException(status_code=404, detail="Workflow run not found")
+
+    state = MarketingState.model_validate(wf.state_snapshot)
+    updated_state = orchestrator.create_next_campaign_iteration(state)
+
+    wf.state_snapshot = updated_state.model_dump()
+    db.commit()
+
+    return {
+        "workflow_id": workflow_id,
+        "current_iteration": updated_state.current_iteration,
+        "message": f"Successfully generated Campaign Iteration {updated_state.current_iteration}.",
+        "state": updated_state.model_dump()
+    }
+
+
+# ==========================================
+# 4. Analytics & CSV Upload Endpoints
 # ==========================================
 
 @router.post("/analytics/upload", response_model=Dict[str, Any])
@@ -203,7 +309,8 @@ async def upload_campaign_csv(
             cpc=row.cpc,
             conv_rate=row.conv_rate,
             cpa=row.cpa,
-            roas=row.roas
+            roas=row.roas,
+            is_simulated="SIMULATED DATA"
         )
         db.add(metric_rec)
 
@@ -228,33 +335,6 @@ async def upload_campaign_csv(
         "recommendations": [r.model_dump() for r in recommendations],
         "next_best_action": next_best_action.model_dump() if next_best_action else None,
         "updated_state": updated_state
-    }
-
-
-# ==========================================
-# 4. Optimization Engine Endpoint
-# ==========================================
-
-@router.post("/optimization/run")
-def run_optimization(workflow_id: str, db: Session = Depends(get_db)):
-    wf = db.query(WorkflowRun).filter(WorkflowRun.id == workflow_id).first()
-    if not wf or not wf.state_snapshot:
-        raise HTTPException(status_code=404, detail="Workflow run not found or has no state.")
-
-    state = MarketingState.model_validate(wf.state_snapshot)
-    if not state.analytics:
-        raise HTTPException(status_code=400, detail="No campaign analytics loaded for this workflow.")
-
-    recommendations, next_best_action = OptimizationService.generate_optimizations(state.analytics)
-    state.recommendations = recommendations
-    state.next_best_action = next_best_action
-    wf.state_snapshot = state.model_dump()
-    db.commit()
-
-    return {
-        "workflow_id": workflow_id,
-        "recommendations": [r.model_dump() for r in recommendations],
-        "next_best_action": next_best_action.model_dump() if next_best_action else None
     }
 
 

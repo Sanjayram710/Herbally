@@ -50,5 +50,4 @@ def test_optimization_empty_data():
     analytics = AnalyticsService.process_campaign_metrics([])
     recommendations, next_best_action = OptimizationService.generate_optimizations(analytics)
     assert len(recommendations) == 0
-    assert next_best_action is not None
-    assert "Upload" in next_best_action.action
+    assert "upload" in next_best_action.action.lower() or "launch" in next_best_action.action.lower()

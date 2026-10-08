@@ -4,9 +4,17 @@ import { WorkflowStepper } from "./components/WorkflowStepper";
 import { NextBestActionCard } from "./components/NextBestActionCard";
 import { ProductSetupSection } from "./components/ProductSetupSection";
 import { StrategySection } from "./components/StrategySection";
+import { CampaignExecutionSection } from "./components/CampaignExecutionSection";
 import { AnalyticsSection } from "./components/AnalyticsSection";
 import { OptimizationSection } from "./components/OptimizationSection";
-import { fetchProducts, runMarketingWorkflow, uploadCampaignCsv } from "./services/api";
+import {
+  fetchProducts,
+  runMarketingWorkflow,
+  approveCampaign,
+  launchSimulatedCampaign,
+  iterateNextCampaign,
+  uploadCampaignCsv
+} from "./services/api";
 import type { ProductItem, MarketingState } from "./types";
 import { AlertCircle } from "lucide-react";
 
@@ -52,9 +60,56 @@ export function App() {
       });
       setWorkflowId(res.workflow_id);
       setMarketingState(res.state);
-      setCurrentStep(2); // Progress to Strategy review
+      setCurrentStep(2); // Progress to Strategy & Creative review
     } catch (err: any) {
       setErrorMessage(err.message || "Failed to execute workflow");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Handle Human Campaign Approval
+  const handleApproveCampaign = async (campaignId: string) => {
+    if (!workflowId) return;
+    setIsLoading(true);
+    setErrorMessage(null);
+    try {
+      const res = await approveCampaign(workflowId, campaignId);
+      setMarketingState(res.state);
+    } catch (err: any) {
+      setErrorMessage(err.message || "Approval failed");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Handle Simulated Sandbox Launch
+  const handleLaunchCampaign = async (campaignId?: string) => {
+    if (!workflowId) return;
+    setIsLoading(true);
+    setErrorMessage(null);
+    try {
+      const res = await launchSimulatedCampaign(workflowId, campaignId);
+      setMarketingState(res.state);
+      setCurrentStep(5); // Progress directly to Analytics & Optimization
+    } catch (err: any) {
+      setErrorMessage(err.message || "Launch failed");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Handle Closed-Loop Campaign Iteration
+  const handleIterateCampaign = async () => {
+    if (!workflowId) return;
+    setIsLoading(true);
+    setErrorMessage(null);
+    try {
+      const res = await iterateNextCampaign(workflowId);
+      setMarketingState(res.state);
+      setCurrentStep(4); // Takes user back to Campaign Execution stage to review & approve Iteration N+1!
+    } catch (err: any) {
+      setErrorMessage(err.message || "Iteration generation failed");
     } finally {
       setIsLoading(false);
     }
@@ -75,13 +130,17 @@ export function App() {
           next_best_action: res.next_best_action,
         });
       }
-      setCurrentStep(5); // Jump directly to Optimization & Actions
+      setCurrentStep(6); // Jump directly to Optimization & Actions
     } catch (err: any) {
       setErrorMessage(err.message || "Failed to upload and parse CSV");
     } finally {
       setIsLoading(false);
     }
   };
+
+  const hasApprovedCampaigns = marketingState?.campaign_plan.some(
+    (c) => c.status === "APPROVED" || c.status === "COMPLETED"
+  ) ?? false;
 
   return (
     <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
@@ -106,12 +165,14 @@ export function App() {
           </div>
         )}
 
-        {/* Guided Workflow Stepper */}
+        {/* Guided 6-Stage Workflow Stepper */}
         <WorkflowStepper
           currentStep={currentStep}
           onSelectStep={(step) => setCurrentStep(step)}
           strategyLoaded={!!marketingState}
+          campaignApproved={hasApprovedCampaigns}
           analyticsLoaded={!!marketingState?.campaign_data_loaded}
+          iteration={marketingState?.current_iteration || 1}
         />
 
         {/* Prominent Next Best Action Hero Card (Visible immediately once generated) */}
@@ -119,7 +180,7 @@ export function App() {
           <NextBestActionCard action={marketingState.next_best_action} />
         )}
 
-        {/* Dynamic Section based on Current Step */}
+        {/* Stage 1: Product & Goal */}
         {currentStep === 1 && (
           <ProductSetupSection
             products={products}
@@ -130,11 +191,24 @@ export function App() {
           />
         )}
 
+        {/* Stage 2 & 3: Strategy & Creative / Plan */}
         {(currentStep === 2 || currentStep === 3) && marketingState && (
           <StrategySection state={marketingState} />
         )}
 
-        {currentStep === 4 && (
+        {/* Stage 4: Campaign Execution (Human Approval & Simulation Launch) */}
+        {currentStep === 4 && marketingState && (
+          <CampaignExecutionSection
+            campaigns={marketingState.campaign_plan}
+            onApproveCampaign={handleApproveCampaign}
+            onLaunchCampaign={handleLaunchCampaign}
+            onProceedToAnalytics={() => setCurrentStep(5)}
+            isLoading={isLoading}
+          />
+        )}
+
+        {/* Stage 5: Analytics */}
+        {currentStep === 5 && (
           <AnalyticsSection
             analytics={marketingState?.analytics}
             onUploadCsv={handleUploadCsv}
@@ -142,11 +216,16 @@ export function App() {
           />
         )}
 
-        {currentStep === 5 && marketingState && (
+        {/* Stage 6: Optimization & Next Action (Closed Loop) */}
+        {currentStep === 6 && marketingState && (
           <OptimizationSection
             recommendations={marketingState.recommendations}
+            nextBestAction={marketingState.next_best_action}
             sources={marketingState.sources}
             assumptions={marketingState.assumptions}
+            currentIteration={marketingState.current_iteration}
+            onIterateCampaign={handleIterateCampaign}
+            isLoading={isLoading}
           />
         )}
       </main>
@@ -159,7 +238,7 @@ export function App() {
         fontSize: "0.8rem",
         color: "var(--text-muted)"
       }}>
-        Herbally AI Digital Marketing Strategist & Optimization Agent • Simulated Sandbox Execution
+        Herbally AI Closed-Loop Digital Marketing Agent • Simulated Sandbox Mode • Zero Live Ad Spend
       </footer>
     </div>
   );

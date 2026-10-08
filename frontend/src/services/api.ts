@@ -30,6 +30,53 @@ export async function runMarketingWorkflow(payload: {
   return res.json();
 }
 
+export async function approveCampaign(
+  workflowId: string,
+  campaignId: string = "all"
+): Promise<{ workflow_id: string; status: string; state: MarketingState }> {
+  const res = await fetch(`${API_BASE}/campaigns/${campaignId}/approve`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ workflow_id: workflowId }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ detail: "Failed to approve campaign" }));
+    throw new Error(err.detail || "Approval failed");
+  }
+  return res.json();
+}
+
+export async function launchSimulatedCampaign(
+  workflowId: string,
+  campaignId?: string
+): Promise<{ workflow_id: string; status: string; state: MarketingState; message: string }> {
+  const res = await fetch(`${API_BASE}/campaigns/launch`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ workflow_id: workflowId, campaign_id: campaignId }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ detail: "Campaign simulation launch failed" }));
+    throw new Error(err.detail || "Launch failed");
+  }
+  return res.json();
+}
+
+export async function iterateNextCampaign(
+  workflowId: string
+): Promise<{ workflow_id: string; current_iteration: number; state: MarketingState; message: string }> {
+  const res = await fetch(`${API_BASE}/campaigns/iterate`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ workflow_id: workflowId }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ detail: "Failed to create next campaign iteration" }));
+    throw new Error(err.detail || "Iteration failed");
+  }
+  return res.json();
+}
+
 export async function uploadCampaignCsv(
   file: File,
   workflowId?: string

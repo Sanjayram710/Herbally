@@ -1,7 +1,7 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import {
-  Compass, Users, TrendingUp, Search, Calendar, Target,
-  Megaphone, Check
+  Compass, Users, TrendingUp, Search, Target,
+  Megaphone, Check, FileText, Video, Mail, Globe, Layers, Copy
 } from "lucide-react";
 import type { MarketingState } from "../types";
 import { EpistemicBadge } from "./EpistemicBadge";
@@ -12,11 +12,19 @@ interface StrategySectionProps {
 
 export const StrategySection: React.FC<StrategySectionProps> = ({ state }) => {
   const [activeTab, setActiveTab] = useState<
-    "overview" | "personas" | "research" | "channels" | "seo" | "content" | "campaign"
+    "overview" | "personas" | "research" | "channels" | "seo" | "content" | "assets"
   >("overview");
+  const [copiedKey, setCopiedKey] = useState<string | null>(null);
 
   const strat = state.strategy;
   const research = state.research;
+  const assets = state.content_strategy?.asset_bundle;
+
+  const handleCopy = (key: string, text: string) => {
+    navigator.clipboard.writeText(text);
+    setCopiedKey(key);
+    setTimeout(() => setCopiedKey(null), 2000);
+  };
 
   return (
     <div style={{ marginTop: "24px" }}>
@@ -36,7 +44,7 @@ export const StrategySection: React.FC<StrategySectionProps> = ({ state }) => {
           { id: "channels", label: "Budget & Channels", icon: Target },
           { id: "seo", label: "SEO Architecture", icon: Search },
           { id: "content", label: "Creatives & Calendar", icon: Megaphone },
-          { id: "campaign", label: "Campaign Plan", icon: Calendar },
+          { id: "assets", label: "Marketing Asset Bundle (8 Formats)", icon: Layers },
         ].map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
@@ -67,7 +75,7 @@ export const StrategySection: React.FC<StrategySectionProps> = ({ state }) => {
           <div className="glass-panel" style={{ padding: "24px" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "14px" }}>
               <h3 style={{ fontSize: "1.15rem", color: "#ffffff" }}>Brand Positioning Statement</h3>
-              <EpistemicBadge category="AI_RECOMMENDATION" />
+              <EpistemicBadge category="MARKETING_SUGGESTION" />
             </div>
             <p style={{ fontSize: "1rem", color: "var(--text-primary)", fontStyle: "italic", lineHeight: 1.6, marginBottom: "16px" }}>
               "{strat.positioning_statement}"
@@ -119,7 +127,7 @@ export const StrategySection: React.FC<StrategySectionProps> = ({ state }) => {
                 <span className="badge badge-assumption">
                   {persona.is_primary ? "Primary Persona Hypothesis" : "Secondary Persona"}
                 </span>
-                <EpistemicBadge category="ASSUMPTION_OR_ESTIMATE" />
+                <EpistemicBadge category="AI_INFERENCE" />
               </div>
               <h3 style={{ fontSize: "1.2rem", color: "#ffffff", marginBottom: "6px" }}>
                 {persona.persona_name}
@@ -162,7 +170,7 @@ export const StrategySection: React.FC<StrategySectionProps> = ({ state }) => {
             <div className="glass-panel" style={{ padding: "24px" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
                 <h3 style={{ fontSize: "1.15rem", color: "#ffffff" }}>Industry Trends & Opportunity Analysis</h3>
-                <EpistemicBadge category="EXTERNAL_RESEARCH" sourceText={research.provider_source} />
+                <EpistemicBadge category="RESEARCH_FINDING" sourceText={research.provider_source} />
               </div>
               <p style={{ fontSize: "0.9rem", color: "var(--text-secondary)", marginBottom: "18px" }}>
                 {research.market_overview}
@@ -227,7 +235,7 @@ export const StrategySection: React.FC<StrategySectionProps> = ({ state }) => {
                 Total Allocated: INR {state.budget.toLocaleString()} (100% mathematically balanced)
               </p>
             </div>
-            <EpistemicBadge category="AI_RECOMMENDATION" />
+            <EpistemicBadge category="MARKETING_SUGGESTION" />
           </div>
 
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "16px" }}>
@@ -291,7 +299,6 @@ export const StrategySection: React.FC<StrategySectionProps> = ({ state }) => {
       {/* Tab 6: Content & Ad Copy */}
       {activeTab === "content" && state.content_strategy && (
         <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
-          {/* Ad Variations */}
           <div>
             <h3 style={{ fontSize: "1.15rem", color: "#ffffff", marginBottom: "16px" }}>3 High-Converting Ad Copy Variations</h3>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: "20px" }}>
@@ -334,41 +341,197 @@ export const StrategySection: React.FC<StrategySectionProps> = ({ state }) => {
         </div>
       )}
 
-      {/* Tab 7: Campaign Plan */}
-      {activeTab === "campaign" && (
-        <div className="glass-panel" style={{ padding: "24px" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
+      {/* Tab 7: Comprehensive Marketing Asset Bundle (Section 5.2) */}
+      {activeTab === "assets" && assets && (
+        <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <div>
-              <h3 style={{ fontSize: "1.15rem", color: "#ffffff" }}>Simulated Campaign Deployment Plan</h3>
+              <h3 style={{ fontSize: "1.2rem", color: "#ffffff" }}>Generated Marketing Assets (8 Formats)</h3>
               <p style={{ fontSize: "0.82rem", color: "var(--text-secondary)" }}>
-                Human approval required prior to live advertising activation
+                Ready-to-deploy creatives following strictly grounded brand claims
               </p>
             </div>
-            <span className="badge badge-verified">Simulated Sandbox</span>
+            <EpistemicBadge category="MARKETING_SUGGESTION" />
           </div>
 
-          <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
-            {state.campaign_plan.map((cp, idx) => (
-              <div key={idx} style={{
-                background: "rgba(255, 255, 255, 0.03)",
-                border: "1px solid var(--border-subtle)",
-                borderRadius: "10px",
-                padding: "16px"
-              }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px", flexWrap: "wrap", gap: "8px" }}>
-                  <div style={{ fontSize: "0.95rem", fontWeight: 600, color: "#ffffff" }}>{cp.campaign_name}</div>
-                  <span style={{ fontSize: "0.75rem", color: "#f59e0b", background: "rgba(245, 158, 11, 0.15)", padding: "3px 8px", borderRadius: "6px" }}>
-                    {cp.execution_status}
-                  </span>
-                </div>
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "10px", fontSize: "0.82rem", color: "var(--text-secondary)", marginTop: "10px" }}>
-                  <div><strong>Platform:</strong> {cp.platform}</div>
-                  <div><strong>Budget:</strong> INR {cp.budget_inr.toLocaleString()}</div>
-                  <div><strong>Creative:</strong> {cp.creative_type}</div>
-                  <div><strong>KPI Target:</strong> {cp.primary_kpis.join(", ")}</div>
-                </div>
+          {/* 1. Instagram Post & 2. Instagram Reel Script */}
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(360px, 1fr))", gap: "20px" }}>
+            {/* Instagram Post */}
+            <div className="glass-panel" style={{ padding: "20px" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
+                <span style={{ fontSize: "0.85rem", color: "#e1306c", fontWeight: 700, display: "flex", alignItems: "center", gap: "6px" }}>
+                  <Megaphone size={16} /> 1. Instagram Feed Post
+                </span>
+                <button
+                  className="btn-secondary"
+                  style={{ padding: "4px 8px", fontSize: "0.75rem" }}
+                  onClick={() => handleCopy("ig_post", assets.instagram_post.caption || "")}
+                >
+                  <Copy size={12} /> {copiedKey === "ig_post" ? "Copied!" : "Copy"}
+                </button>
               </div>
-            ))}
+              <p style={{ fontSize: "0.84rem", color: "var(--text-secondary)", lineHeight: 1.6, whiteSpace: "pre-line", marginBottom: "12px" }}>
+                {assets.instagram_post.caption}
+              </p>
+              <div style={{ fontSize: "0.75rem", color: "#38bdf8", marginBottom: "8px" }}>
+                {assets.instagram_post.hashtags?.join(" ")}
+              </div>
+              <div style={{ fontSize: "0.75rem", color: "var(--text-muted)", background: "rgba(0,0,0,0.2)", padding: "8px", borderRadius: "6px" }}>
+                <strong>Visual Concept:</strong> {assets.instagram_post.image_concept}
+              </div>
+            </div>
+
+            {/* Instagram Reel Script */}
+            <div className="glass-panel" style={{ padding: "20px" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
+                <span style={{ fontSize: "0.85rem", color: "#e1306c", fontWeight: 700, display: "flex", alignItems: "center", gap: "6px" }}>
+                  <Video size={16} /> 2. Instagram Reel Video Script
+                </span>
+              </div>
+              <div style={{ background: "rgba(225, 48, 108, 0.1)", border: "1px solid rgba(225, 48, 108, 0.25)", padding: "10px", borderRadius: "8px", marginBottom: "12px" }}>
+                <strong style={{ fontSize: "0.78rem", color: "#f43f5e", display: "block" }}>3-Second Hook:</strong>
+                <span style={{ fontSize: "0.85rem", color: "#ffffff", fontWeight: 600 }}>"{assets.instagram_reel_script.hook}"</span>
+              </div>
+              <div style={{ display: "flex", flexDirection: "column", gap: "8px", marginBottom: "12px" }}>
+                {assets.instagram_reel_script.scenes?.map((sc, i) => (
+                  <div key={i} style={{ background: "rgba(255,255,255,0.02)", padding: "8px 10px", borderRadius: "6px", fontSize: "0.8rem" }}>
+                    <span style={{ color: "#38bdf8", fontWeight: 600 }}>[{sc.second}]</span> {sc.visual}
+                    <div style={{ color: "#34d399", fontSize: "0.75rem", marginTop: "2px" }}>Overlay: "{sc.text_overlay}"</div>
+                  </div>
+                ))}
+              </div>
+              <div style={{ fontSize: "0.78rem", color: "var(--text-secondary)", background: "rgba(0,0,0,0.2)", padding: "8px", borderRadius: "6px" }}>
+                <strong>Voiceover:</strong> {assets.instagram_reel_script.voiceover}
+              </div>
+            </div>
+          </div>
+
+          {/* 3. Meta Ad Copy & 4. Google Search Ad */}
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(360px, 1fr))", gap: "20px" }}>
+            {/* Meta Ad Copy */}
+            <div className="glass-panel" style={{ padding: "20px" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
+                <span style={{ fontSize: "0.85rem", color: "#1877f2", fontWeight: 700, display: "flex", alignItems: "center", gap: "6px" }}>
+                  <FileText size={16} /> 3. Meta Feed Ad Copy
+                </span>
+                <button
+                  className="btn-secondary"
+                  style={{ padding: "4px 8px", fontSize: "0.75rem" }}
+                  onClick={() => handleCopy("meta_ad", assets.meta_ad_copy.primary_text || "")}
+                >
+                  <Copy size={12} /> {copiedKey === "meta_ad" ? "Copied!" : "Copy"}
+                </button>
+              </div>
+              <div style={{ fontSize: "0.95rem", fontWeight: 700, color: "#ffffff", marginBottom: "8px" }}>
+                "{assets.meta_ad_copy.headline}"
+              </div>
+              <p style={{ fontSize: "0.84rem", color: "var(--text-secondary)", lineHeight: 1.5, marginBottom: "12px" }}>
+                {assets.meta_ad_copy.primary_text}
+              </p>
+              <div style={{ background: "rgba(16, 185, 129, 0.15)", color: "#34d399", padding: "6px 12px", borderRadius: "6px", fontSize: "0.8rem", fontWeight: 600, textAlign: "center" }}>
+                CTA Button: {assets.meta_ad_copy.call_to_action}
+              </div>
+            </div>
+
+            {/* Google Search Ad */}
+            <div className="glass-panel" style={{ padding: "20px" }}>
+              <span style={{ fontSize: "0.85rem", color: "#4285f4", fontWeight: 700, display: "flex", alignItems: "center", gap: "6px", marginBottom: "12px" }}>
+                <Globe size={16} /> 4. Google Responsive Search Ad
+              </span>
+              <div style={{ marginBottom: "10px" }}>
+                <strong style={{ fontSize: "0.75rem", color: "var(--text-muted)", display: "block" }}>Headlines:</strong>
+                <ul style={{ listStyle: "none", fontSize: "0.84rem", color: "#38bdf8" }}>
+                  {assets.google_search_ad.headlines?.map((h, i) => (
+                    <li key={i}>• {h}</li>
+                  ))}
+                </ul>
+              </div>
+              <div style={{ marginBottom: "10px" }}>
+                <strong style={{ fontSize: "0.75rem", color: "var(--text-muted)", display: "block" }}>Descriptions:</strong>
+                <p style={{ fontSize: "0.82rem", color: "var(--text-secondary)" }}>
+                  {assets.google_search_ad.descriptions?.join(" ")}
+                </p>
+              </div>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "6px" }}>
+                {assets.google_search_ad.sitelinks?.map((sl, i) => (
+                  <div key={i} style={{ background: "rgba(255,255,255,0.03)", padding: "6px 8px", borderRadius: "6px", fontSize: "0.75rem" }}>
+                    <div style={{ color: "#34d399", fontWeight: 600 }}>{sl.title}</div>
+                    <div style={{ color: "var(--text-muted)" }}>{sl.desc}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* 5. Email Marketing & 6. Blog SEO */}
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(360px, 1fr))", gap: "20px" }}>
+            {/* Email Marketing */}
+            <div className="glass-panel" style={{ padding: "20px" }}>
+              <span style={{ fontSize: "0.85rem", color: "#a855f7", fontWeight: 700, display: "flex", alignItems: "center", gap: "6px", marginBottom: "12px" }}>
+                <Mail size={16} /> 5. Lifecycle Email Campaign
+              </span>
+              <div style={{ fontSize: "0.88rem", fontWeight: 600, color: "#ffffff", marginBottom: "4px" }}>
+                Subject: {assets.email_marketing.subject_line}
+              </div>
+              <div style={{ fontSize: "0.75rem", color: "var(--text-muted)", marginBottom: "12px" }}>
+                Preview: {assets.email_marketing.preview_text}
+              </div>
+              <div style={{ fontSize: "0.82rem", color: "var(--text-secondary)", lineHeight: 1.5, background: "rgba(0,0,0,0.2)", padding: "12px", borderRadius: "8px", whiteSpace: "pre-line", marginBottom: "10px" }}>
+                {assets.email_marketing.body_markdown}
+              </div>
+              <div style={{ background: "rgba(16, 185, 129, 0.15)", color: "#34d399", padding: "6px 12px", borderRadius: "6px", fontSize: "0.8rem", fontWeight: 600, textAlign: "center" }}>
+                CTA: {assets.email_marketing.cta_text}
+              </div>
+            </div>
+
+            {/* Blog SEO Content */}
+            <div className="glass-panel" style={{ padding: "20px" }}>
+              <span style={{ fontSize: "0.85rem", color: "#10b981", fontWeight: 700, display: "flex", alignItems: "center", gap: "6px", marginBottom: "12px" }}>
+                <Search size={16} /> 6. Blog & On-Page SEO Outline
+              </span>
+              <div style={{ fontSize: "0.95rem", fontWeight: 700, color: "#ffffff", marginBottom: "4px" }}>
+                {assets.blog_seo_content.title}
+              </div>
+              <div style={{ fontSize: "0.78rem", color: "#38bdf8", marginBottom: "12px" }}>
+                Target Keyword: "{assets.blog_seo_content.target_keyword}"
+              </div>
+              <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                {assets.blog_seo_content.outline_sections?.map((sec, i) => (
+                  <div key={i} style={{ background: "rgba(255,255,255,0.03)", padding: "8px 10px", borderRadius: "6px", fontSize: "0.82rem", color: "var(--text-secondary)" }}>
+                    {sec}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* 7. CTA Variants & 8. Headline Variants */}
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(360px, 1fr))", gap: "20px" }}>
+            <div className="glass-panel" style={{ padding: "20px" }}>
+              <h4 style={{ fontSize: "0.9rem", color: "#34d399", fontWeight: 600, marginBottom: "12px" }}>
+                7. Call to Action (CTA) Variants
+              </h4>
+              <ul style={{ listStyle: "none", display: "flex", flexDirection: "column", gap: "8px" }}>
+                {assets.cta_variants.map((cta, i) => (
+                  <li key={i} style={{ background: "rgba(255,255,255,0.02)", padding: "8px 12px", borderRadius: "6px", fontSize: "0.84rem", color: "#ffffff" }}>
+                    • {cta}
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div className="glass-panel" style={{ padding: "20px" }}>
+              <h4 style={{ fontSize: "0.9rem", color: "#38bdf8", fontWeight: 600, marginBottom: "12px" }}>
+                8. High-Converting Headline Variants
+              </h4>
+              <ul style={{ listStyle: "none", display: "flex", flexDirection: "column", gap: "8px" }}>
+                {assets.headline_variants.map((hl, i) => (
+                  <li key={i} style={{ background: "rgba(255,255,255,0.02)", padding: "8px 12px", borderRadius: "6px", fontSize: "0.84rem", color: "#ffffff" }}>
+                    • "{hl}"
+                  </li>
+                ))}
+              </ul>
+            </div>
           </div>
         </div>
       )}
