@@ -1,5 +1,5 @@
 from typing import List, Optional
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 
 class ProductCreate(BaseModel):
@@ -24,8 +24,19 @@ class WorkflowTriggerRequest(BaseModel):
     product_name: str = "Herbally Pure Neem Infused Organic Bedsheet"
     brand: str = "Herbally"
     description: Optional[str] = None
+    product_url: Optional[str] = "https://herbally.in/products/neem-organic-bedsheet"
     market: str = "India"
     marketing_goal: str = "Increase online sales"
-    budget: float = 50000.0
-    duration_days: int = 30
+    budget: float = Field(default=50000.0, gt=0, description="Budget must be greater than zero")
+    duration_days: int = Field(default=30, gt=0, description="Duration in days must be greater than zero")
     target_audience_hint: Optional[str] = "Premium wellness and conscious lifestyle consumers"
+
+    @field_validator("product_url")
+    @classmethod
+    def validate_url(cls, v: Optional[str]) -> Optional[str]:
+        if v:
+            v_str = str(v).strip()
+            if v_str and not (v_str.startswith("http://") or v_str.startswith("https://")):
+                raise ValueError("Product URL must start with http:// or https://")
+            return v_str
+        return v

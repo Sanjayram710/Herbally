@@ -10,7 +10,7 @@ from app.api.routes import router
 
 
 def seed_sample_products():
-    """Seeds default Herbally product if not already seeded."""
+    """Seeds default Herbally product and core brand data if not already seeded."""
     db = SessionLocal()
     try:
         sample_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "data", "sample_products.json")
@@ -34,8 +34,22 @@ def seed_sample_products():
                         )
                         db.add(new_prod)
                 db.commit()
+
+        # Seed brand profile, automations, integrations, customer messages & landing page
+        from app.services.brand_service import BrandService
+        from app.services.automation_service import AutomationService
+        from app.services.integration_service import IntegrationService
+        from app.services.customer_message_service import CustomerMessageService
+        from app.services.landing_page_service import LandingPageService
+
+        BrandService.get_or_create_default_brand(db)
+        AutomationService.seed_default_rules(db)
+        IntegrationService.seed_default_integrations(db)
+        CustomerMessageService.seed_sample_messages(db)
+        LandingPageService.get_or_create_draft(db)
+
     except Exception as e:
-        print(f"Warning: Failed to seed sample products: {e}")
+        print(f"Warning: Failed to seed sample data: {e}")
     finally:
         db.close()
 

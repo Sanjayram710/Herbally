@@ -2,11 +2,12 @@ import React from "react";
 import { CheckCircle2, Circle, ArrowRight } from "lucide-react";
 
 interface WorkflowStepperProps {
-  currentStep: number; // 1 to 6
+  currentStep: number; // 1 to 8
   onSelectStep: (step: number) => void;
   strategyLoaded: boolean;
   campaignApproved: boolean;
   analyticsLoaded: boolean;
+  hasRevisedCampaign: boolean;
   iteration: number;
 }
 
@@ -16,15 +17,18 @@ export const WorkflowStepper: React.FC<WorkflowStepperProps> = ({
   strategyLoaded,
   campaignApproved,
   analyticsLoaded,
+  hasRevisedCampaign,
   iteration,
 }) => {
   const steps = [
     { id: 1, label: "Product & Goal", completed: strategyLoaded },
-    { id: 2, label: "Strategy & Assets", completed: strategyLoaded },
-    { id: 3, label: "Campaign Plan", completed: campaignApproved || analyticsLoaded },
-    { id: 4, label: "Campaign Execution", completed: analyticsLoaded },
-    { id: 5, label: "Analytics", completed: analyticsLoaded },
-    { id: 6, label: "Optimization & Action", completed: analyticsLoaded },
+    { id: 2, label: "Strategy", completed: strategyLoaded },
+    { id: 3, label: "Content", completed: strategyLoaded },
+    { id: 4, label: "Campaign", completed: campaignApproved || analyticsLoaded },
+    { id: 5, label: "Simulated Execution", completed: analyticsLoaded },
+    { id: 6, label: "Analytics", completed: analyticsLoaded },
+    { id: 7, label: "Optimization", completed: analyticsLoaded },
+    { id: 8, label: "Revised Campaign", completed: hasRevisedCampaign },
   ];
 
   return (

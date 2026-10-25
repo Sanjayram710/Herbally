@@ -9,6 +9,8 @@ interface OptimizationSectionProps {
   assumptions: AssumptionItem[];
   currentIteration: number;
   onIterateCampaign: () => Promise<void>;
+  onReviseCampaign?: (recommendationId?: string) => Promise<void>;
+  onProceedToRevised?: () => void;
   isLoading: boolean;
 }
 
@@ -19,6 +21,8 @@ export const OptimizationSection: React.FC<OptimizationSectionProps> = ({
   assumptions,
   currentIteration,
   onIterateCampaign,
+  onReviseCampaign,
+  onProceedToRevised,
   isLoading,
 }) => {
   const nextIter = nextBestAction?.next_campaign_iteration;
@@ -48,15 +52,26 @@ export const OptimizationSection: React.FC<OptimizationSectionProps> = ({
               </div>
             </div>
 
-            <button
-              className="btn-primary"
-              onClick={() => onIterateCampaign()}
-              disabled={isLoading}
-              style={{ padding: "12px 24px", fontSize: "0.95rem" }}
-            >
-              <Rocket size={17} />
-              {isLoading ? "Generating Iteration..." : `Create Campaign Iteration ${currentIteration + 1} →`}
-            </button>
+            <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
+              <button
+                className="btn-primary"
+                onClick={() => onIterateCampaign()}
+                disabled={isLoading}
+                style={{ padding: "12px 24px", fontSize: "0.95rem" }}
+              >
+                <Rocket size={17} />
+                {isLoading ? "Generating Iteration..." : `Create Campaign Iteration ${currentIteration + 1} →`}
+              </button>
+              {onProceedToRevised && (
+                <button
+                  className="btn-secondary"
+                  onClick={onProceedToRevised}
+                  style={{ padding: "12px 20px", fontSize: "0.95rem", borderColor: "rgba(168, 85, 247, 0.5)", color: "#c084fc" }}
+                >
+                  View Revised Campaign (Stage 8) →
+                </button>
+              )}
+            </div>
           </div>
 
           <p style={{ fontSize: "0.88rem", color: "var(--text-secondary)", marginBottom: "16px", lineHeight: 1.5 }}>
@@ -156,9 +171,42 @@ export const OptimizationSection: React.FC<OptimizationSectionProps> = ({
                   </span>
                 </div>
               </div>
+
+              {/* Action to Revise Campaign */}
+              <div style={{ marginTop: "14px", display: "flex", justifyContent: "flex-end" }}>
+                <button
+                  className="btn-secondary"
+                  style={{
+                    borderColor: "rgba(168, 85, 247, 0.4)",
+                    color: "#c084fc",
+                    fontSize: "0.82rem",
+                    padding: "6px 14px",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "6px"
+                  }}
+                  onClick={() => onReviseCampaign ? onReviseCampaign(rec.id) : onIterateCampaign()}
+                  disabled={isLoading}
+                >
+                  <Rocket size={13} />
+                  Apply Recommendation & Create Revised Campaign (Stage 8) →
+                </button>
+              </div>
             </div>
           ))}
         </div>
+
+        {onProceedToRevised && (
+          <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "20px" }}>
+            <button
+              className="btn-primary"
+              onClick={onProceedToRevised}
+              style={{ padding: "12px 24px", fontSize: "0.95rem" }}
+            >
+              Proceed to Stage 8: Revised Campaign Plan →
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Epistemic Audit: Sources & Assumptions */}

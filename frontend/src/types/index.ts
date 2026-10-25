@@ -163,8 +163,11 @@ export interface CampaignPlanItem {
   budget_inr: number;
   duration_days: number;
   primary_kpis: string[];
-  status: "DRAFT" | "PENDING_APPROVAL" | "APPROVED" | "SIMULATED_RUNNING" | "COMPLETED" | "OPTIMIZED" | string;
+  status: "DRAFT" | "PENDING_APPROVAL" | "APPROVED" | "SIMULATED_RUNNING" | "PAUSED" | "COMPLETED" | "OPTIMIZED" | string;
   iteration_number?: number;
+  source_campaign_id?: string;
+  revised_from_id?: string;
+  applied_recommendation_ids?: string[];
   linked_assets?: Record<string, any>;
   kpi_targets?: Record<string, any>;
 }
@@ -208,6 +211,8 @@ export interface AnalyticsOutput {
 }
 
 export interface OptimizationRecommendation {
+  id?: string;
+  campaign_id?: string;
   finding: string;
   evidence: string;
   recommendation: string;
@@ -229,12 +234,14 @@ export interface NextBestAction {
 export interface MarketingState {
   product_name: string;
   brand: string;
+  product_url?: string;
   market: string;
   target_audience_input?: string;
   marketing_goal: string;
   budget: number;
   duration_days: number;
   current_iteration: number;
+  selected_campaign_id?: string;
   product?: ProductUnderstanding;
   research?: MarketResearchOutput;
   competitors: CompetitorProfile[];
@@ -264,3 +271,174 @@ export interface ProductItem {
   prohibited_medical_claims: string[];
   official_url?: string;
 }
+
+export interface BrandProfile {
+  id: string;
+  name: string;
+  industry: string;
+  description: string;
+  website_url?: string;
+  target_audience: string;
+  marketing_objectives: string[];
+  preferred_channels: string[];
+  brand_voice: string;
+  brand_colors: Record<string, string>;
+  logo_url?: string;
+  brand_guidelines?: string;
+  factual_claims: string[];
+  prohibited_claims: string[];
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface ContentAssetItem {
+  id: string;
+  brand_id: string;
+  product_id?: string;
+  campaign_id?: string;
+  channel: string;
+  asset_type: "social_post" | "ad_copy" | "reel_script" | "headline" | "product_desc" | "creative_brief" | string;
+  title: string;
+  content: string;
+  headline?: string;
+  body_copy?: string;
+  call_to_action?: string;
+  hashtags: string[];
+  image_prompt?: string;
+  generated_media_url?: string;
+  status: "draft" | "pending_approval" | "approved" | "scheduled" | "published_demo" | "failed" | "cancelled" | string;
+  provider_source: string;
+  version: number;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface ContentScheduleItem {
+  id: string;
+  asset_id: string;
+  channel: string;
+  scheduled_time: string;
+  status: "scheduled" | "published_demo" | "failed" | "cancelled" | string;
+  attempts_count: number;
+  last_attempt_at?: string;
+  error_message?: string;
+  is_simulated: string;
+  created_at?: string;
+}
+
+export interface AutomationRuleItem {
+  id: string;
+  name: string;
+  description: string;
+  trigger_type: string;
+  action_type: string;
+  frequency: string;
+  is_enabled: boolean;
+  config?: Record<string, any>;
+  last_run_at?: string;
+  created_at?: string;
+}
+
+export interface AutomationExecutionItem {
+  id: string;
+  rule_id: string;
+  rule_name: string;
+  status: "success" | "failed" | "skipped" | string;
+  details: string;
+  error_message?: string;
+  executed_at?: string;
+}
+
+export interface IntegrationItem {
+  id: string;
+  name: string;
+  category: "advertising" | "social" | "analytics" | "ai" | "search" | string;
+  status: "connected" | "unconfigured" | "disconnected" | "simulated_sandbox" | string;
+  is_configured: boolean;
+  credentials_mask: string;
+  permissions: string[];
+  supported_actions: string[];
+  last_sync_at?: string;
+  error_message?: string;
+  setup_instructions?: string;
+}
+
+export interface AssistantMessageItem {
+  id: string;
+  brand_id: string;
+  role: "user" | "assistant" | "system" | "tool" | string;
+  content: string;
+  tool_called?: string;
+  tool_result?: Record<string, any>;
+  created_at?: string;
+}
+
+export interface DashboardSummaryData {
+  brand_id: string;
+  brand_name: string;
+  brand_industry: string;
+  active_campaigns_count: number;
+  total_campaigns_count: number;
+  content_counts: Record<string, number>;
+  pending_approvals: Array<{
+    id: string;
+    type: string;
+    title: string;
+    channel?: string;
+    budget_inr?: number;
+    created_at?: string;
+  }>;
+  recent_automations: Array<{
+    id: string;
+    rule_name: string;
+    status: string;
+    details: string;
+    executed_at?: string;
+  }>;
+  integration_health: {
+    total: number;
+    connected: number;
+    unconfigured: number;
+    mode: string;
+  };
+  latest_kpi_summary?: {
+    total_spend: number;
+    total_impressions: number;
+    total_clicks: number;
+    total_conversions: number;
+    total_revenue: number;
+    overall_ctr: number;
+    overall_cpc: number;
+    overall_cpa: number;
+    overall_roas: number;
+    best_campaign?: string;
+  };
+  metric_provenance: string;
+  next_best_action?: NextBestAction;
+}
+
+export interface CustomerMessageItem {
+  id: string;
+  brand_id: string;
+  channel: string;
+  customer_name: string;
+  message_text: string;
+  draft_reply?: string;
+  status: "draft_reply" | "approved_to_send" | "sent_demo" | "failed" | string;
+  is_simulated: boolean;
+  created_at?: string;
+}
+
+export interface LandingPageDraftData {
+  id: string;
+  brand_id: string;
+  title: string;
+  hero_headline: string;
+  hero_subheadline: string;
+  value_props: Array<{ title: string; description: string }>;
+  call_to_action: string;
+  seo_title: string;
+  seo_description: string;
+  status: string;
+}
+

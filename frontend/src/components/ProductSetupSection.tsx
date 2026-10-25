@@ -9,6 +9,7 @@ interface ProductSetupSectionProps {
   onSubmitWorkflow: (params: {
     product_name: string;
     brand: string;
+    product_url?: string;
     market: string;
     marketing_goal: string;
     budget: number;
@@ -25,18 +26,61 @@ export const ProductSetupSection: React.FC<ProductSetupSectionProps> = ({
   onSubmitWorkflow,
   isLoading,
 }) => {
-  const [budget, setBudget] = useState<number>(50000);
-  const [duration, setDuration] = useState<number>(30);
-  const [goal, setGoal] = useState<string>("Increase online D2C sales");
-  const [market, setMarket] = useState<string>("India (Tier-1 Metros)");
-  const [audienceHint, setAudienceHint] = useState<string>("Premium wellness and conscious lifestyle consumers");
+  const [budget, setBudget] = useState<number>(() => {
+    const saved = localStorage.getItem("herbally_brief_budget");
+    return saved ? Number(saved) : 50000;
+  });
+  const [duration, setDuration] = useState<number>(() => {
+    const saved = localStorage.getItem("herbally_brief_duration");
+    return saved ? Number(saved) : 30;
+  });
+  const [goal, setGoal] = useState<string>(() => {
+    return localStorage.getItem("herbally_brief_goal") || "Increase online D2C sales";
+  });
+  const [market, setMarket] = useState<string>(() => {
+    return localStorage.getItem("herbally_brief_market") || "India (Tier-1 Metros)";
+  });
+  const [audienceHint, setAudienceHint] = useState<string>(() => {
+    return localStorage.getItem("herbally_brief_audience") || "Premium wellness and conscious lifestyle consumers";
+  });
+  const [productUrl, setProductUrl] = useState<string>(() => {
+    return localStorage.getItem("herbally_brief_url") || "https://herbally.in/products/neem-organic-bedsheet";
+  });
+  const [validationError, setValidationError] = useState<string | null>(null);
+
+  // Sync state to localStorage for persistence
+  React.useEffect(() => {
+    localStorage.setItem("herbally_brief_budget", String(budget));
+    localStorage.setItem("herbally_brief_duration", String(duration));
+    localStorage.setItem("herbally_brief_goal", goal);
+    localStorage.setItem("herbally_brief_market", market);
+    localStorage.setItem("herbally_brief_audience", audienceHint);
+    localStorage.setItem("herbally_brief_url", productUrl);
+  }, [budget, duration, goal, market, audienceHint, productUrl]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedProduct) return;
+
+    // Strict validation
+    if (!productUrl || (!productUrl.startsWith("http://") && !productUrl.startsWith("https://"))) {
+      setValidationError("Product URL must be a valid URL starting with http:// or https://");
+      return;
+    }
+    if (budget <= 0) {
+      setValidationError("Budget must be a positive number greater than 0.");
+      return;
+    }
+    if (duration <= 0) {
+      setValidationError("Campaign duration must be at least 1 day.");
+      return;
+    }
+
+    setValidationError(null);
     onSubmitWorkflow({
       product_name: selectedProduct.name,
       brand: selectedProduct.brand,
+      product_url: productUrl,
       market,
       marketing_goal: goal,
       budget,
@@ -167,6 +211,41 @@ export const ProductSetupSection: React.FC<ProductSetupSectionProps> = ({
         </div>
 
         <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+          {validationError && (
+            <div style={{
+              background: "rgba(244, 63, 94, 0.15)",
+              border: "1px solid rgba(244, 63, 94, 0.4)",
+              borderRadius: "8px",
+              padding: "10px 14px",
+              color: "#fb7185",
+              fontSize: "0.82rem"
+            }}>
+              {validationError}
+            </div>
+          )}
+
+          <div>
+            <label style={{ display: "block", fontSize: "0.82rem", color: "var(--text-secondary)", marginBottom: "6px" }}>
+              Product Landing URL
+            </label>
+            <input
+              type="url"
+              required
+              value={productUrl}
+              onChange={(e) => setProductUrl(e.target.value)}
+              placeholder="https://herbally.in/products/neem-organic-bedsheet"
+              style={{
+                width: "100%",
+                padding: "10px 14px",
+                background: "rgba(255, 255, 255, 0.04)",
+                border: "1px solid var(--border-subtle)",
+                borderRadius: "8px",
+                color: "#ffffff",
+                fontSize: "0.9rem"
+              }}
+            />
+          </div>
+
           <div>
             <label style={{ display: "block", fontSize: "0.82rem", color: "var(--text-secondary)", marginBottom: "6px" }}>
               Target Market

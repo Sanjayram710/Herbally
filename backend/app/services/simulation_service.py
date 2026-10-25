@@ -22,8 +22,8 @@ class SimulationService:
         opt_boost = 1.0 + (iteration - 1) * 0.18  # 18% improvement on iteration 2
 
         for camp in campaigns:
-            # Lifecycle rule: Only APPROVED campaigns can be launched in simulator
-            if camp.status in ["APPROVED", "PENDING_APPROVAL"]:
+            # Lifecycle rule: Only APPROVED or SIMULATED_RUNNING campaigns can be completed in simulator
+            if camp.status in ["APPROVED", "PENDING_APPROVAL", "SIMULATED_RUNNING"]:
                 camp.status = "COMPLETED"
             
             budget = camp.budget_inr

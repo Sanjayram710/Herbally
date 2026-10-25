@@ -157,9 +157,12 @@ class CampaignPlanItem(BaseModel):
     duration_days: int = 30
     primary_kpis: List[str] = Field(default_factory=list)
     
-    # Lifecycle: DRAFT | PENDING_APPROVAL | APPROVED | SIMULATED_RUNNING | COMPLETED | OPTIMIZED
+    # Lifecycle: DRAFT | PENDING_APPROVAL | APPROVED | SIMULATED_RUNNING | PAUSED | COMPLETED | OPTIMIZED
     status: str = "PENDING_APPROVAL"
     iteration_number: int = 1
+    source_campaign_id: Optional[str] = None
+    revised_from_id: Optional[str] = None
+    applied_recommendation_ids: List[str] = Field(default_factory=list)
     linked_assets: Dict[str, Any] = Field(default_factory=dict)
     kpi_targets: Dict[str, Any] = Field(default_factory=dict)
 
@@ -203,6 +206,8 @@ class AnalyticsOutput(BaseModel):
 
 
 class OptimizationRecommendation(BaseModel):
+    id: Optional[str] = None
+    campaign_id: Optional[str] = None
     finding: str
     evidence: str
     recommendation: str
@@ -225,12 +230,14 @@ class MarketingState(BaseModel):
     # Core User Inputs
     product_name: str
     brand: str = "Herbally"
+    product_url: Optional[str] = None
     market: str = "India"
     target_audience_input: Optional[str] = "Premium wellness and conscious lifestyle consumers"
     marketing_goal: str = "Increase online sales"
     budget: float = 50000.0
     duration_days: int = 30
     current_iteration: int = 1
+    selected_campaign_id: Optional[str] = None
     
     # Discovery & Understanding
     product: Optional[ProductUnderstanding] = None

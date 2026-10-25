@@ -216,15 +216,18 @@ class MarketingOrchestrator:
         )
 
         # Construct initial state
+        selected_id = campaign_plan[0].id if campaign_plan else None
         state = MarketingState(
             product_name=req.product_name,
             brand=req.brand,
+            product_url=getattr(req, "product_url", None),
             market=req.market,
             target_audience_input=req.target_audience_hint or "Conscious wellness seekers",
             marketing_goal=req.marketing_goal,
             budget=req.budget,
             duration_days=req.duration_days,
             current_iteration=1,
+            selected_campaign_id=selected_id,
             product=product_understanding,
             research=market_research,
             competitors=competitors,
@@ -256,13 +259,18 @@ class MarketingOrchestrator:
             if campaign_id is None or c.id == campaign_id:
                 # Require approval before launching in simulator
                 if c.status in ["APPROVED", "PENDING_APPROVAL"]:
+                    c.status = "SIMULATED_RUNNING"
                     targets.append(c)
 
         if not targets:
-            # Fallback: approve all pending to permit demo progression
+            # Fallback: approve and simulate target or all
             for c in state.campaign_plan:
-                c.status = "APPROVED"
-                targets.append(c)
+                if campaign_id is None or c.id == campaign_id:
+                    c.status = "SIMULATED_RUNNING"
+                    targets.append(c)
+
+        if targets:
+            state.selected_campaign_id = targets[0].id
 
         # Run simulation
         raw_rows, updated_campaigns = self.simulation_service.simulate_campaign_run(
@@ -280,7 +288,8 @@ class MarketingOrchestrator:
         analytics_output = self.analytics_service.process_campaign_metrics(raw_rows)
         recommendations, next_best_action = self.optimization_service.generate_optimizations(
             analytics_output,
-            current_iteration=state.current_iteration
+            current_iteration=state.current_iteration,
+            selected_campaign_id=state.selected_campaign_id
         )
 
         state.campaign_data_loaded = True
@@ -308,10 +317,118 @@ class MarketingOrchestrator:
 
         return state
 
+    def update_campaign_status(self, state: MarketingState, campaign_id: str, new_status: str) -> MarketingState:
+        """Updates a campaign's lifecycle status."""
+        for c in state.campaign_plan:
+            if c.id == campaign_id or campaign_id == "all":
+                c.status = new_status
+        return state
+
+    def reset_campaign_run(self, state: MarketingState, campaign_id: str) -> MarketingState:
+        """Resets a campaign's execution status back to DRAFT or PENDING_APPROVAL and clears metrics."""
+        for c in state.campaign_plan:
+            if c.id == campaign_id or campaign_id == "all":
+                c.status = "DRAFT"
+
+        if state.analytics and state.analytics.campaign_rows:
+            if campaign_id == "all":
+                state.analytics.campaign_rows = []
+                state.campaign_data_loaded = False
+                state.recommendations = []
+            else:
+                state.analytics.campaign_rows = [
+                    r for r in state.analytics.campaign_rows if r.campaign_id != campaign_id
+                ]
+                if not state.analytics.campaign_rows:
+                    state.campaign_data_loaded = False
+
+        return state
+
+    def select_campaign(self, state: MarketingState, campaign_id: str) -> MarketingState:
+        """Selects an active campaign and re-scopes optimizations to it."""
+        state.selected_campaign_id = campaign_id
+        if state.analytics and state.analytics.campaign_rows:
+            recs, nba = self.optimization_service.generate_optimizations(
+                state.analytics,
+                current_iteration=state.current_iteration,
+                selected_campaign_id=campaign_id
+            )
+            state.recommendations = recs
+            state.next_best_action = nba
+        return state
+
+    def revise_campaign(
+        self,
+        state: MarketingState,
+        source_campaign_id: str,
+        recommendation_id: Optional[str] = None
+    ) -> MarketingState:
+        """
+        Creates a revised campaign configuration with explicit lineage linking
+        back to source_campaign_id. Initial status is DRAFT (pending review).
+        """
+        source = next((c for c in state.campaign_plan if c.id == source_campaign_id), None)
+        if not source:
+            source = state.campaign_plan[0] if state.campaign_plan else None
+
+        if not source:
+            return state
+
+        next_iter = state.current_iteration + 1
+        revised_id = f"{source.id}-REV-{next_iter:02d}"
+
+        # Determine scaling / optimization adjustments
+        applied_recs = [recommendation_id] if recommendation_id else []
+        scaled_budget = round(source.budget_inr * 1.30, 2)
+
+        revised = CampaignPlanItem(
+            id=revised_id,
+            campaign_name=f"{source.campaign_name} (Revised V{next_iter})",
+            platform=source.platform,
+            objective=source.objective,
+            target_audience=source.target_audience,
+            creative_type=f"Revised {source.creative_type} with Optimized Hook Angle",
+            messaging="Stop spending on night creams if your sheets trap bacteria. Experience 100% GOTS organic Neem sleep.",
+            call_to_action="Shop Pure Neem Bedsheets — Free Shipping",
+            budget_inr=scaled_budget,
+            duration_days=source.duration_days,
+            primary_kpis=["ROAS > 4.0x", "CPA < INR 850", "CTR > 3.0%"],
+            status="DRAFT",
+            iteration_number=next_iter,
+            source_campaign_id=source.id,
+            revised_from_id=source.id,
+            applied_recommendation_ids=applied_recs,
+            linked_assets={
+                "source_campaign_id": source.id,
+                "base_creative": source.creative_type,
+                "scaling_factor": 1.30,
+                "hook_angle": "Night Cream vs Bacterial Sheet Contact"
+            },
+            kpi_targets={
+                "target_roas": 4.0,
+                "target_cpa": 850.0
+            }
+        )
+
+        state.campaign_plan.append(revised)
+        state.selected_campaign_id = revised.id
+        state.current_iteration = next_iter
+
+        state.sources.append(
+            EpistemicSource(
+                category="MARKETING_SUGGESTION",
+                description=f"Generated Revised Campaign {revised_id} derived from {source.id}.",
+                source_reference="Optimization Decision Loop",
+                confidence_level="HIGH"
+            )
+        )
+
+        return state
+
     def create_next_campaign_iteration(self, state: MarketingState) -> MarketingState:
         """
         Closed-Loop Action: Creates the next campaign iteration based on the Next Best Action findings.
-        Appends the new campaign in PENDING_APPROVAL status for human review.
+        Appends the new campaign in DRAFT/PENDING_APPROVAL status for human review.
         """
         if not state.next_best_action or not state.next_best_action.next_campaign_iteration:
             return state
@@ -330,12 +447,16 @@ class MarketingOrchestrator:
             duration_days=30,
             status="PENDING_APPROVAL",
             iteration_number=state.current_iteration + 1,
+            source_campaign_id=next_spec.get("source_campaign_id"),
+            revised_from_id=next_spec.get("revised_from_id"),
+            applied_recommendation_ids=next_spec.get("applied_recommendation_ids", []),
             linked_assets=next_spec.get("linked_assets", {}),
             kpi_targets=next_spec.get("kpi_targets", {})
         )
 
         state.current_iteration += 1
         state.campaign_plan.append(new_campaign)
+        state.selected_campaign_id = new_campaign.id
         
         state.sources.append(
             EpistemicSource(
@@ -358,7 +479,8 @@ class MarketingOrchestrator:
         analytics_output = self.analytics_service.process_campaign_metrics(raw_rows)
         recommendations, next_best_action = self.optimization_service.generate_optimizations(
             analytics_output,
-            current_iteration=state.current_iteration
+            current_iteration=state.current_iteration,
+            selected_campaign_id=state.selected_campaign_id
         )
 
         state.campaign_data_loaded = True

@@ -35,3 +35,21 @@ def filter_safe_benefits(benefits: List[str]) -> List[str]:
         if is_safe:
             safe_benefits.append(benefit)
     return safe_benefits
+
+
+class GuardrailsService:
+    @staticmethod
+    def validate_claims(text: str) -> Tuple[bool, List[str]]:
+        return sanitize_and_validate_claims(text)
+
+    @staticmethod
+    def filter_safe_benefits(benefits: List[str]) -> List[str]:
+        return filter_safe_benefits(benefits)
+
+    @staticmethod
+    def filter_ad_copy(text: str) -> str:
+        """Sanitizes ad copy by replacing prohibited claims with safe wellness alternatives."""
+        cleaned = text
+        for pattern in PROHIBITED_HEALTH_PATTERNS:
+            cleaned = re.sub(pattern, "soothes sensitive skin naturally", cleaned, flags=re.IGNORECASE)
+        return cleaned

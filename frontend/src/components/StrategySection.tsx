@@ -8,9 +8,10 @@ import { EpistemicBadge } from "./EpistemicBadge";
 
 interface StrategySectionProps {
   state: MarketingState;
+  onProceedToContent?: () => void;
 }
 
-export const StrategySection: React.FC<StrategySectionProps> = ({ state }) => {
+export const StrategySection: React.FC<StrategySectionProps> = ({ state, onProceedToContent }) => {
   const [activeTab, setActiveTab] = useState<
     "overview" | "personas" | "research" | "channels" | "seo" | "content" | "assets"
   >("overview");
@@ -533,6 +534,18 @@ export const StrategySection: React.FC<StrategySectionProps> = ({ state }) => {
               </ul>
             </div>
           </div>
+        </div>
+      )}
+
+      {onProceedToContent && (
+        <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "20px" }}>
+          <button
+            className="btn-primary"
+            onClick={onProceedToContent}
+            style={{ padding: "12px 24px", fontSize: "0.95rem" }}
+          >
+            Proceed to Stage 3: Usable Content & Assets Library →
+          </button>
         </div>
       )}
     </div>

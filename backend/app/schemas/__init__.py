@@ -19,6 +19,12 @@ from app.schemas.state import (
 )
 from app.schemas.product import ProductCreate, ProductRead, WorkflowTriggerRequest
 from app.schemas.analytics import CampaignRowInput, CampaignDataUploadResponse, AnalyticsRequest
+from app.schemas.brand import BrandProfileCreate, BrandProfileRead, BrandProfileUpdate, WebsiteIngestRequest, WebsiteIngestResponse
+from app.schemas.content import ContentAssetCreate, ContentAssetRead, ContentAssetUpdate, ContentScheduleCreate, ContentScheduleRead, ContentGenerateRequest
+from app.schemas.integration import IntegrationRead, IntegrationTestRequest, IntegrationTestResponse
+from app.schemas.automation import AutomationRuleRead, AutomationRuleToggle, AutomationExecutionRead
+from app.schemas.assistant import AssistantMessageCreate, AssistantMessageRead, AssistantResponse
+from app.schemas.dashboard import DashboardSummary
 
 __all__ = [
     "MarketingState",
@@ -44,4 +50,25 @@ __all__ = [
     "CampaignRowInput",
     "CampaignDataUploadResponse",
     "AnalyticsRequest",
+    "BrandProfileCreate",
+    "BrandProfileRead",
+    "BrandProfileUpdate",
+    "WebsiteIngestRequest",
+    "WebsiteIngestResponse",
+    "ContentAssetCreate",
+    "ContentAssetRead",
+    "ContentAssetUpdate",
+    "ContentScheduleCreate",
+    "ContentScheduleRead",
+    "ContentGenerateRequest",
+    "IntegrationRead",
+    "IntegrationTestRequest",
+    "IntegrationTestResponse",
+    "AutomationRuleRead",
+    "AutomationRuleToggle",
+    "AutomationExecutionRead",
+    "AssistantMessageCreate",
+    "AssistantMessageRead",
+    "AssistantResponse",
+    "DashboardSummary",
 ]

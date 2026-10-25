@@ -1,110 +1,80 @@
-# AI-Powered Digital Marketing Strategist & Optimization Agent
+# Herbally AI Marketing Automation Platform
 
-[![FastAPI](https://img.shields.io/badge/FastAPI-0.110+-009688.svg?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.115+-009688.svg?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
 [![React](https://img.shields.io/badge/React-18+-61DAFB.svg?logo=react&logoColor=black)](https://react.dev)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5+-3178C6.svg?logo=typescript&logoColor=white)](https://www.typescriptlang.org)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.8+-3178C6.svg?logo=typescript&logoColor=white)](https://www.typescriptlang.org)
 [![Python](https://img.shields.io/badge/Python-3.11+-3776AB.svg?logo=python&logoColor=white)](https://www.python.org)
-[![Tests](https://img.shields.io/badge/Tests-13%20Passed-brightgreen.svg)](file:///backend/tests)
+[![Tests](https://img.shields.io/badge/Tests-23%20Passed-brightgreen.svg)](file:///backend/tests)
 
-An end-to-end full-stack agentic system engineered for premium niche consumer brands. Rather than functioning as an ungrounded "ChatGPT for marketing" prompt wrapper, this system combines **typed state machines**, **deterministic arithmetic**, **epistemic provenance tracking**, **non-negotiable medical claim guardrails**, and **heuristic decision loops**.
+An end-to-end full-stack AI marketing automation workspace engineered for growing consumer brands, combining paid advertising optimization with omnichannel content creation, scheduling, brand intelligence, reputation assistance, and business presence.
 
-Demonstrated on the real premium brand **Herbally** and its flagship **Pure Neem Infused Organic Bedsheet**.
+Built directly for **Herbally** and its flagship **Pure Neem Infused Organic Bedsheet**, the platform replaces disconnected dashboards and ungrounded chat prompts with an integrated closed-loop operational workflow:
 
----
-
-## 1. Problem & Solution
-
-### The Problem
-* Generative LLMs generate hallucinated marketing claims, invent health benefits, create mathematically unbalanced budgets, and produce ungrounded ad copy.
-* Traditional digital marketers struggle to synthesize campaign metrics into immediate, prioritized operational next steps.
-
-### The Solution
-* **Strict Grounding:** Distinguishes verified facts, market research, AI hypotheses, and assumptions.
-* **Non-Negotiable Guardrails:** Programmatically detects and prevents illegal or misleading medical claims (e.g., curing eczema or insomnia).
-* **Deterministic Calculations:** Computes CTR, CPC, CPA, ROAS, and conversion rates in pure Python with zero-division safety.
-* **Priority Next Best Action:** Answers the single most critical marketing question: *"What should the marketer do next?"* with concrete evidence, strategic rationale, and expected impact.
+```text
+Business / Brand Context
+  → Strategy & Positioning
+  → Content & Creative Assets
+  → Campaign Planning & Budgeting
+  → Review & Human Approval Gate
+  → Simulated Sandbox or Authorized Execution
+  → Deterministic Analytics
+  → Metric-Driven Optimization
+  → Linked Revised Campaigns
+```
 
 ---
 
-## 2. Product Concept & Demo Scenario
+## 1. Key Platform Capabilities
 
-* **Brand:** Herbally (Indian Herbal Textiles & Sleep Wellness)
-* **Product:** Herbally Pure Neem Infused Organic Bedsheet (100% GOTS organic cotton, 300 Thread Count satin weave, natural Neem botanical extract wash, hypoallergenic).
-* **Market:** India (Tier 1 Metros: Mumbai, Bengaluru, Delhi NCR, Pune, Hyderabad).
-* **Marketing Goal:** Increase online D2C sales.
-* **Monthly Budget:** INR 50,000 (30-day duration).
+### 🛡️ Truthful Capabilities & Safety Boundaries
+* **Simulated Sandbox Execution:** Campaign launches and scheduled content publishing operate in safe demo sandboxes by default (`SIMULATED_RUNNING` and `PUBLISHED (Demo)`), preventing unauthorized ad spend or premature public postings.
+* **Non-Negotiable Medical Claim Guardrails:** Programmatically detects and prevents illegal or misleading health claims (e.g., curing eczema or insomnia), enforcing AYUSH/FDA-compliant wellness statements.
+* **Deterministic Metric Calculations:** CTR, CPC, CPA, ROAS, and conversion rates are computed in a dedicated Python calculation module with zero-division safety and pandas aggregation.
+* **SSRF-Protected Website Ingestion:** Ingests public web context while resolving hostnames and strictly blocking loopback, private RFC1918 subnets, and cloud metadata services (`169.254.169.254`).
+* **Server-Side Secret Isolation:** API keys, access tokens, and webhook credentials remain server-side and are never leaked to frontend browser bundles.
+* **Honest Prompt Disclosures:** Creative briefs and image generation prompts are explicitly labeled as structured text prompts rather than rendered media files.
+
+---
+
+## 2. Workspace Navigation & Modules
+
+The platform is organized via a persistent SaaS sidebar into three primary functional areas:
+
+### Core Workspace
+1. **Executive Dashboard:** Live metrics overview, interactive 8-stage Closed-Loop roadmap, content pipeline status, pending approval alerts, and recent automation activities.
+2. **Brand Intelligence:** Canonical brand profile editor (voice tone, target markets, default budgets, claim rules) and SSRF-safe public website ingestion.
+3. **AI Content Studio:** Generation of social posts, ad copy, reels scripts, and creative briefs. Includes modal editing, duplication, approval workflow, and calendar scheduling.
+4. **Content Calendar:** Queue list and calendar grid views for scheduled social posts with demo sandbox publishing verification.
+5. **AI Marketing Assistant:** Conversational assistant grounded in brand context with tool-calling capabilities (`explain_analytics`, `generate_content_draft`, `check_pending_approvals`, `draft_customer_reply`).
+6. **Automation Center:** Rule management for automated reporting, pending approval alerts, and content drafts, complete with execution audit logs.
+7. **Integrations:** Status tracking and ping verification for advertising, analytics, and social connectors with clear unconfigured/demo labeling.
+8. **Settings & Diagnostics:** System health check, executive report export (Markdown & JSON state), and local cache management.
+
+### Campaign Lifecycle (Closed Loop)
+1. **Products & Services:** Product catalog with verified specifications, pricing, and medical claim constraints.
+2. **Strategy & Positioning:** Market research, competitor benchmarks, SEO keyword clusters, and balanced channel allocations.
+3. **Campaign Manager:** Campaign drafting, creative copy selection, audience definitions, and budget management.
+4. **Approval & Execution:** Enforces human review and approval before transitioning campaigns into simulated sandbox runs.
+5. **Deterministic Analytics:** Ingests raw performance data and computes accurate marketing KPIs.
+6. **Optimization & Recommendations:** Evaluates underperforming assets and highlights Priority Next Best Actions.
+7. **Revised Campaigns:** Generates new campaign iterations with explicit lineage back to parent runs.
+
+### Omnichannel Tools
+1. **Customer Messages:** Ingestion of customer inquiries and reviews, AI reply drafting against brand guidelines, and explicit human approval gates before simulated delivery.
+2. **Business Presence:** Brand landing page builder with SEO metadata configuration, desktop/mobile responsive preview simulator, and HTML export.
 
 ---
 
 ## 3. Technology Stack
 
-* **Backend:** Python 3.11, FastAPI, Pydantic v2, SQLAlchemy 2.0 ORM, SQLite (local MVP, PostgreSQL compatible), Pandas.
-* **Frontend:** React 18, TypeScript, Vite, Lucide Icons, Vanilla CSS with custom glassmorphism design system.
-* **Testing:** Pytest (13 automated tests covering zero-division safety, CSV ingestion, heuristics, guardrails, and full E2E workflow).
-* **Execution Mode:** 100% functional locally at zero cost using pre-calibrated domain mock providers; plug-and-play support for OpenAI/Gemini/Tavily via environment variables.
+* **Backend:** Python 3.11, FastAPI, Pydantic v2, SQLAlchemy 2.0 ORM, SQLite3 (`marketing_v2.db`), Pandas, HTTPX, Pytest.
+* **Frontend:** React 18, Vite 8, TypeScript 5.8, Lucide React, Custom Responsive Glassmorphism CSS Design System.
+* **Data Storage:** SQLite database with relational foreign keys linking products, brands, content assets, schedules, campaigns, executions, automations, and landing pages.
+* **Execution Environment:** 100% functional locally at zero cost; pre-calibrated domain fallback templates allow full offline operation without requiring paid API keys.
 
 ---
 
-## 4. Repository Structure
-
-```text
-c:\DM\
-├── .env.example
-├── .gitignore
-├── README.md
-├── docker-compose.yml
-├── data/
-│   ├── sample_campaign.csv        # Realistic campaign performance dataset
-│   └── sample_products.json       # Grounded Herbally product catalog seed
-├── docs/
-│   ├── architecture.md            # System architecture with Mermaid diagrams
-│   ├── agent-workflow.md          # Step-by-step agent data flow and sequences
-│   └── technical-decisions.md     # Technology choices & trade-off rationale
-├── backend/
-│   ├── requirements.txt
-│   ├── app/
-│   │   ├── main.py                # FastAPI app with lifespan seeders & CORS
-│   │   ├── config.py              # Pydantic Settings
-│   │   ├── database.py            # SQLAlchemy engine & session maker
-│   │   ├── models/                # Product, Campaign, WorkflowRun, Recommendation
-│   │   ├── schemas/               # MarketingState & Pydantic domain models
-│   │   ├── services/
-│   │   │   ├── orchestrator.py    # Synchronous Marketing Orchestrator
-│   │   │   ├── analytics_service.py # Deterministic metrics with zero-division safety
-│   │   │   ├── optimization_service.py # Heuristic engine & Next Best Action
-│   │   │   ├── research_service.py  # Mock/Live search & competitor intelligence
-│   │   │   ├── llm_service.py     # Replaceable LLM adapter with deterministic fallback
-│   │   │   ├── guardrails.py      # Health & medical claim compliance filters
-│   │   │   └── report_service.py  # Markdown & JSON report generator
-│   │   └── api/
-│   │       └── routes.py          # REST endpoints
-│   └── tests/
-│       ├── test_analytics.py      # Zero-division math & CSV safety tests
-│       ├── test_optimization.py   # Heuristic rules & Next Best Action tests
-│       ├── test_guardrails.py     # Medical claim compliance tests
-│       └── test_e2e_workflow.py   # Automated end-to-end pipeline test
-└── frontend/
-    ├── package.json
-    ├── vite.config.ts
-    ├── index.html
-    └── src/
-        ├── App.tsx                # Guided wizard orchestrating the 5 stages
-        ├── index.css              # Custom rich aesthetic design system
-        ├── types/index.ts         # TypeScript data definitions
-        ├── services/api.ts        # API client
-        └── components/
-            ├── Header.tsx
-            ├── WorkflowStepper.tsx
-            ├── NextBestActionCard.tsx # Hero priority recommendation card
-            ├── ProductSetupSection.tsx
-            ├── StrategySection.tsx
-            ├── AnalyticsSection.tsx
-            └── OptimizationSection.tsx
-```
-
----
-
-## 5. Quickstart & Installation
+## 4. Quickstart & Installation
 
 ### Prerequisites
 * Python 3.11+
@@ -114,86 +84,49 @@ c:\DM\
 ```bash
 cd backend
 pip install -r requirements.txt
-python -m uvicorn app.main:app --host 127.0.0.1 --port 8001
+python -m uvicorn app.main:app --host 127.0.0.1 --port 8001 --reload
 ```
-* Backend will be available at: `http://127.0.0.1:8001`
+* Backend API: `http://127.0.0.1:8001`
 * Interactive API Documentation (Swagger UI): `http://127.0.0.1:8001/docs`
 
 ### 2. Frontend Setup
-In a new terminal:
+In a separate terminal:
 ```bash
 cd frontend
 npm install
-npx vite --port 5173 --host 127.0.0.1
+npm run dev
 ```
-* Dashboard will be live at: `http://127.0.0.1:5173`
+* Workspace Application: `http://127.0.0.1:5173`
 
 ---
 
-## 6. Demo Walkthrough Guide
+## 5. Automated Verification
 
-1. **Step 1: Product & Goal Setup**
-   * Open `http://127.0.0.1:5173`.
-   * The verified **Herbally Pure Neem Infused Organic Bedsheet** is automatically loaded with verified features and strict medical claim guardrails.
-   * Verify budget is set to ₹50,000 for 30 days.
-   * Click **"Generate End-to-End Marketing Strategy"**.
-2. **Step 2 & 3: Review Strategy & Creatives**
-   * Review Brand Positioning & mathematically balanced channel budget allocation.
-   * View Target Audience Personas (Holistic Wellness Enthusiast & Urban Professional).
-   * Review Competitor Benchmark (Sunday Bedding, Duroflex Natural, Organic Marketplaces).
-   * Review SEO Keywords, 3 distinct Ad Copy variations, and 7-day content calendar.
-3. **Step 4: Campaign Analytics & CSV Ingestion**
-   * Navigate to Step 4 (*Analytics & CSV*).
-   * Click **"Load Herbally Sample CSV (Demo)"** or upload `data/sample_campaign.csv`.
-   * Review deterministic KPIs: Total Spend, Conversions, Blended ROAS, CPA, CTR, and the Campaign Breakdown table.
-4. **Step 5: Priority Next Best Action & Report Export**
-   * Review the prominent **Priority Next Best Action Hero Card** at the top.
-   * Review the 4 evidence-backed optimization recommendations.
-   * Inspect the Grounded Source Provenance and Audited Working Assumptions.
-   * Click **"Export Markdown"** or **"Export JSON State"** in the top navigation to download the executive strategy report.
-
----
-
-## 7. API Endpoints Reference
-
-| Method | Endpoint | Description |
-| :--- | :--- | :--- |
-| `GET` | `/health` | Health check endpoint |
-| `GET` | `/api/products` | Retrieve registered verified products |
-| `POST` | `/api/products` | Register a new product |
-| `POST` | `/api/marketing/analyze` | Execute the full synchronous strategy workflow |
-| `GET` | `/api/marketing/workflow/{id}` | Retrieve state snapshot for a workflow run |
-| `POST` | `/api/analytics/upload` | Upload & parse campaign CSV, compute deterministic KPIs |
-| `POST` | `/api/optimization/run` | Re-run optimization heuristics for a workflow run |
-| `GET` | `/api/reports/{id}/markdown` | Download executive report in Markdown format |
-| `GET` | `/api/reports/{id}/json` | Download complete workflow state in JSON format |
-
----
-
-## 8. Automated Testing
-
-Run the automated test suite:
+Run the comprehensive test suite:
 ```bash
 cd backend
 pytest -v
 ```
 
-**Test Coverage Highlights:**
-* Zero-division safety in formulas (`safe_divide` handles 0 clicks, 0 impressions, 0 spend, null values).
-* CSV parser validation (detects missing required columns, limits file size to 5MB).
-* Medical claim guardrails (blocks prohibited claims like "cures eczema" or "treats insomnia").
-* Heuristic optimization engine (identifies top-performing creative and flags budget drag).
-* End-to-end integration test (`Product Input → Research → Strategy → Content → Campaign → CSV Data → Analytics → Optimization → Next Best Action → Reports`).
+**Verification Results: 23 passed**
+* **Zero-division arithmetic & metrics:** CTR, CPC, CPA, ROAS calculation safety (`test_analytics.py`, `test_operations_workflow.py`).
+* **Medical claim guardrails:** Prohibited claim detection and wellness filtering (`test_guardrails.py`).
+* **Heuristic optimization & lineage:** Top/worst performer identification and revised campaign generation (`test_optimization.py`, `test_closed_loop.py`).
+* **SSRF protection:** Rejection of loopback, private subnets, and cloud metadata IPs (`test_platform_modules.py`).
+* **Brand intelligence & ingestion:** Brand profile persistence and website context extraction (`test_platform_modules.py`).
+* **Content studio & calendar:** Multi-format generation, editing, and sandbox scheduling (`test_platform_modules.py`).
+* **AI assistant tool calling:** Conversational grounding and tool execution records (`test_platform_modules.py`).
+* **Automation rules & audit history:** Rule triggers and execution logging (`test_platform_modules.py`).
+* **Integrations & dashboard:** Connector statuses and summary aggregation (`test_platform_modules.py`).
+
+Frontend production build check:
+```bash
+cd frontend
+npm run build
+```
+* Result: `tsc -b && vite build` completed cleanly with zero TypeScript errors.
 
 ---
 
-## 9. Current Limitations & Future Integrations
-
-### Safe Limitations in MVP
-* **Execution is Simulated:** The MVP marks all campaigns as `SIMULATED_PENDING_APPROVAL`. It never commits live marketing budgets or modifies live ad accounts.
-* **Mock Providers by Default:** Uses verified domain mock datasets so the platform operates offline at zero cost without requiring paid search or LLM API keys.
-
-### Future Integrations Roadmap
-* **Google Ads API & Meta Ads Graph API:** For one-click campaign draft creation upon explicit human approval.
-* **Google Search Console & GA4:** Real-time retrieval of search impressions and landing page conversion funnels.
-* **Live Web Research:** Plug-and-play adapter for SerpAPI / Tavily search engines.
+## 6. License
+MIT License. Created for the Herbally AI Marketing Strategist project.
