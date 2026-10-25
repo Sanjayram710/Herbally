@@ -206,7 +206,7 @@ export const StrategySection: React.FC<StrategySectionProps> = ({ state, onProce
                     <th style={{ padding: "10px" }}>Positioning</th>
                     <th style={{ padding: "10px" }}>Price Range</th>
                     <th style={{ padding: "10px" }}>Marketing Channels</th>
-                    <th style={{ padding: "10px" }}>Opportunity For Herbally</th>
+                    <th style={{ padding: "10px" }}>Opportunity For Brand</th>
                   </tr>
                 </thead>
                 <tbody>

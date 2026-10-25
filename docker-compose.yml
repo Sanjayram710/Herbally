@@ -14,8 +14,11 @@ services:
       - DATABASE_URL=sqlite:///./marketing.db
       - LLM_PROVIDER=mock
       - SEARCH_PROVIDER=mock
+      - IMAGE_PROVIDER=unconfigured
+      - MEDIA_STORAGE_DIR=/app/media
     volumes:
       - ./data:/app/data
+      - ./data/media:/app/media
 
   frontend:
     build:

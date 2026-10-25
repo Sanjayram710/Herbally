@@ -5,6 +5,8 @@ from pydantic import BaseModel, Field
 
 class IntegrationRead(BaseModel):
     id: str
+    workspace_id: Optional[str] = None
+    connector_key: Optional[str] = None
     name: str
     category: str
     status: str

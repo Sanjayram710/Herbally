@@ -4,7 +4,7 @@ import {
   FileDown,
   RotateCcw
 } from "lucide-react";
-import { getReportDownloadUrl } from "../services/api";
+import { downloadReport } from "../services/api";
 
 interface SettingsViewProps {
   workflowId: string | null;
@@ -73,13 +73,14 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ workflowId, onResetS
           </p>
 
           <div style={{ display: "flex", flexDirection: "column", gap: "10px", marginTop: "8px" }}>
-            <a
-              href={workflowId ? getReportDownloadUrl(workflowId, "markdown") : "#"}
-              onClick={(e) => {
+            <button
+              disabled={!workflowId}
+              onClick={() => {
                 if (!workflowId) {
-                  e.preventDefault();
                   alert("Execute a marketing workflow first to download report.");
+                  return;
                 }
+                downloadReport(workflowId, "markdown").catch((error) => alert(error.message));
               }}
               className="btn-primary"
               style={{
@@ -90,20 +91,20 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ workflowId, onResetS
                 alignItems: "center",
                 justifyContent: "center",
                 gap: "8px",
-                textDecoration: "none",
                 opacity: workflowId ? 1 : 0.6
               }}
             >
               <FileDown size={14} /> Download Executive Report (Markdown)
-            </a>
+            </button>
 
-            <a
-              href={workflowId ? getReportDownloadUrl(workflowId, "json") : "#"}
-              onClick={(e) => {
+            <button
+              disabled={!workflowId}
+              onClick={() => {
                 if (!workflowId) {
-                  e.preventDefault();
                   alert("Execute a marketing workflow first to download state.");
+                  return;
                 }
+                downloadReport(workflowId, "json").catch((error) => alert(error.message));
               }}
               className="btn-secondary"
               style={{
@@ -114,12 +115,11 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ workflowId, onResetS
                 alignItems: "center",
                 justifyContent: "center",
                 gap: "8px",
-                textDecoration: "none",
                 opacity: workflowId ? 1 : 0.6
               }}
             >
               <FileDown size={14} /> Download Workflow State Snapshot (JSON)
-            </a>
+            </button>
           </div>
 
           {/* Reset cache */}

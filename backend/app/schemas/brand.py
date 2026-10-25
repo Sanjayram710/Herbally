@@ -4,30 +4,23 @@ from pydantic import BaseModel, Field
 
 
 class BrandProfileBase(BaseModel):
-    name: str = "Herbally"
-    industry: str = "Herbal Textiles & Sleep Wellness"
-    description: str = "Herbally crafts 100% GOTS organic cotton bedsheets infused with natural botanical Neem extracts."
-    website_url: Optional[str] = "https://herbally.in"
-    target_audience: str = "Holistic wellness seekers, eco-conscious homeowners, and high-performance urban professionals in Tier-1 metros."
-    marketing_objectives: List[str] = Field(default_factory=lambda: ["Increase online D2C conversions", "Build organic social engagement", "Position as sleep wellness category leader"])
-    preferred_channels: List[str] = Field(default_factory=lambda: ["Instagram", "Meta Ads", "Google Search", "Email", "Blog SEO"])
-    brand_voice: str = "Grounded, premium, evidence-backed, serene, and authentically Ayurvedic without exaggerated claims."
-    brand_colors: Dict[str, str] = Field(default_factory=lambda: {"primary": "#10b981", "secondary": "#064e3b", "accent": "#f59e0b", "background": "#0b0f19"})
+    name: str = "My Brand"
+    industry: str = "General"
+    description: str = ""
+    website_url: Optional[str] = None
+    target_audience: str = ""
+    marketing_objectives: List[str] = Field(default_factory=lambda: ["Increase conversions", "Build brand awareness"])
+    preferred_channels: List[str] = Field(default_factory=lambda: ["Instagram", "Meta Ads", "Google Search"])
+    brand_voice: str = "Grounded, premium, authentic, and compelling"
+    brand_colors: Dict[str, str] = Field(default_factory=lambda: {"primary": "#3b82f6", "secondary": "#1d4ed8", "accent": "#f59e0b", "background": "#0b0f19"})
     logo_url: Optional[str] = None
-    brand_guidelines: Optional[str] = "Always emphasize 100% GOTS certified organic cotton and pure Neem extract wash. Never claim to cure eczema, treat insomnia, or make medical guarantees."
-    factual_claims: List[str] = Field(default_factory=lambda: [
-        "100% GOTS certified organic cotton",
-        "Natural botanical Neem extract wash",
-        "300 Thread Count sateen weave",
-        "Hypoallergenic & breathable",
-        "Ethically sourced & crafted in India"
-    ])
-    prohibited_claims: List[str] = Field(default_factory=lambda: [
-        "Cures eczema",
-        "Treats chronic insomnia",
-        "Clinically proven medical therapy",
-        "Guarantees permanent acne cure"
-    ])
+    brand_guidelines: Optional[str] = None
+    factual_claims: List[str] = Field(default_factory=list)
+    prohibited_claims: List[str] = Field(default_factory=list)
+    geographic_market: Optional[str] = "India"
+    preferred_language: Optional[str] = "English"
+    budget_range: Optional[str] = None
+    workspace_id: Optional[str] = None
 
 
 class BrandProfileCreate(BrandProfileBase):
@@ -48,10 +41,14 @@ class BrandProfileUpdate(BaseModel):
     brand_guidelines: Optional[str] = None
     factual_claims: Optional[List[str]] = None
     prohibited_claims: Optional[List[str]] = None
+    geographic_market: Optional[str] = None
+    preferred_language: Optional[str] = None
+    budget_range: Optional[str] = None
 
 
 class BrandProfileRead(BrandProfileBase):
     id: str
+    workspace_id: Optional[str] = None
     created_at: Optional[datetime.datetime] = None
     updated_at: Optional[datetime.datetime] = None
 

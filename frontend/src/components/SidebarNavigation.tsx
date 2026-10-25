@@ -12,7 +12,11 @@ import {
   Link2,
   Settings,
   MessagesSquare,
-  Globe
+  Globe,
+  Camera,
+  Images,
+  Video,
+  Compass,
 } from "lucide-react";
 
 interface SidebarNavigationProps {
@@ -24,12 +28,16 @@ interface SidebarNavigationProps {
 export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
   currentModule,
   onSelectModule,
-  brandName = "Herbally"
+  brandName = "Brand"
 }) => {
   const mainNav = [
+    { id: "unified", label: "Unified Journey (Product C)", icon: <Compass size={17} /> },
     { id: "dashboard", label: "Dashboard", icon: <LayoutDashboard size={17} /> },
     { id: "brand", label: "Brand Intelligence", icon: <Brain size={17} /> },
     { id: "products", label: "Products & Strategy", icon: <Package size={17} /> },
+    { id: "studio", label: "AI Product Studio", icon: <Camera size={17} /> },
+    { id: "video", label: "AI Video Studio", icon: <Video size={17} /> },
+    { id: "media", label: "Media Library", icon: <Images size={17} /> },
     { id: "content", label: "AI Content Studio", icon: <Sparkles size={17} /> },
     { id: "calendar", label: "Content Calendar", icon: <Calendar size={17} /> },
     { id: "campaigns", label: "Campaign Manager", icon: <Rocket size={17} /> },
@@ -43,6 +51,7 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
     { id: "customer_messages", label: "Customer Inquiries", icon: <MessagesSquare size={16} /> },
     { id: "business_presence", label: "Landing Page Draft", icon: <Globe size={16} /> },
   ];
+
 
   return (
     <aside
@@ -68,24 +77,25 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
                 width: "34px",
                 height: "34px",
                 borderRadius: "8px",
-                background: "linear-gradient(135deg, #10b981 0%, #064e3b 100%)",
+                background: "linear-gradient(135deg, #6366f1 0%, #3b82f6 50%, #10b981 100%)",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
                 fontWeight: 800,
                 fontSize: "1rem",
                 color: "#fff",
-                boxShadow: "0 0 15px rgba(16, 185, 129, 0.3)"
+                boxShadow: "0 0 15px rgba(99, 102, 241, 0.4)"
               }}
             >
-              H
+              Ω
             </div>
             <div>
-              <div style={{ fontSize: "1.05rem", fontWeight: 700, color: "var(--text-primary)", letterSpacing: "-0.01em" }}>
-                {brandName} AI
+              <div style={{ fontSize: "1.02rem", fontWeight: 700, color: "var(--text-primary)", letterSpacing: "-0.01em" }}>
+                OmniScale AI
               </div>
-              <div style={{ fontSize: "0.7rem", color: "var(--text-muted)" }}>
-                Marketing Automation v2.0
+              <div style={{ fontSize: "0.72rem", color: "#38bdf8", fontWeight: 600, display: "flex", alignItems: "center", gap: "4px" }}>
+                <span style={{ width: "6px", height: "6px", borderRadius: "50%", background: "#10b981", display: "inline-block" }} />
+                {brandName}
               </div>
             </div>
           </div>

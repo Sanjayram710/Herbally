@@ -15,28 +15,50 @@ import {
   updateContentAsset,
   duplicateContentAsset,
   deleteContentAsset,
-  scheduleContentAsset
+  scheduleContentAsset,
+  attachMediaToCampaign,
+  fetchContentAssetMedia,
+  generateContentAssetImage,
 } from "../services/api";
-import type { ContentAssetItem } from "../types";
+import { ProtectedMediaImage } from "./ProtectedMediaImage";
+import type { CampaignPlanItem, ContentAssetItem, MarketingState } from "../types";
 
 interface ContentStudioViewProps {
   onNavigateToCalendar?: () => void;
+  workflowId?: string;
+  selectedCampaignId?: string;
+  campaigns?: CampaignPlanItem[];
+  onWorkflowStateUpdated?: (state: MarketingState) => void;
+  brandId?: string;
+  brandName?: string;
 }
 
-export const ContentStudioView: React.FC<ContentStudioViewProps> = ({ onNavigateToCalendar }) => {
+export const ContentStudioView: React.FC<ContentStudioViewProps> = ({
+  onNavigateToCalendar,
+  workflowId,
+  selectedCampaignId,
+  campaigns = [],
+  onWorkflowStateUpdated,
+  brandId,
+  brandName = "Brand",
+}) => {
   const [assets, setAssets] = useState<ContentAssetItem[]>([]);
   const [activeTab, setActiveTab] = useState<"all" | "social_ads" | "video_reels" | "photoshoots">("all");
   const [selectedChannel, setSelectedChannel] = useState<string>("all");
   const [selectedStatus, setSelectedStatus] = useState<string>("all");
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isGenerating, setIsGenerating] = useState<boolean>(false);
+  const [generatingMediaAssetId, setGeneratingMediaAssetId] = useState<string | null>(null);
+  const [attachingMediaAssetId, setAttachingMediaAssetId] = useState<string | null>(null);
   const [editingAsset, setEditingAsset] = useState<ContentAssetItem | null>(null);
   const [scheduleTarget, setScheduleTarget] = useState<ContentAssetItem | null>(null);
   const [scheduleTime, setScheduleTime] = useState<string>("2026-11-01T10:00");
 
+  const effectiveBrandId = brandId || "herbally-brand";
+
   const loadAssets = () => {
     setIsLoading(true);
-    fetchContentAssets("herbally-brand")
+    fetchContentAssets(effectiveBrandId)
       .then((data) => setAssets(data))
       .catch((err) => console.error("Error loading content assets:", err))
       .finally(() => setIsLoading(false));
@@ -44,13 +66,13 @@ export const ContentStudioView: React.FC<ContentStudioViewProps> = ({ onNavigate
 
   useEffect(() => {
     loadAssets();
-  }, []);
+  }, [effectiveBrandId]);
 
   const handleGenerate = async () => {
     setIsGenerating(true);
     try {
       const newAssets = await generateContentAssets({
-        brand_id: "herbally-brand",
+        brand_id: effectiveBrandId,
         channels: ["Instagram", "Meta Ads", "Google Search"],
         asset_types: ["social_post", "ad_copy", "reel_script"]
       });
@@ -122,6 +144,53 @@ export const ContentStudioView: React.FC<ContentStudioViewProps> = ({ onNavigate
     }
   };
 
+  const handleGenerateImage = async (asset: ContentAssetItem) => {
+    const confirmed = confirm(
+      "Generate and store an image for this asset? This sends its saved image prompt to the configured image provider and may incur provider charges."
+    );
+    if (!confirmed) return;
+
+    setGeneratingMediaAssetId(asset.id);
+    try {
+      const result = await generateContentAssetImage(asset.id, { confirmed: true, quality: "low" });
+      setAssets((prev) => prev.map((item) => (
+        item.id === asset.id ? { ...item, generated_media_url: result.generated_media_url } : item
+      )));
+      alert("Image generated and stored locally. Attach it to a campaign separately when ready.");
+    } catch (err: any) {
+      alert(err.message || "Image generation failed");
+    } finally {
+      setGeneratingMediaAssetId(null);
+    }
+  };
+
+  const handleAttachLatestMedia = async (asset: ContentAssetItem) => {
+    if (!workflowId || !selectedCampaignId) {
+      alert("Start a marketing workflow and select a campaign before attaching media.");
+      return;
+    }
+    const campaign = campaigns.find((item) => item.id === selectedCampaignId);
+    if (!campaign) {
+      alert("The selected campaign is no longer available in this workflow.");
+      return;
+    }
+    if (!confirm(`Attach the latest stored image for “${asset.title}” to “${campaign.campaign_name}”?`)) return;
+
+    setAttachingMediaAssetId(asset.id);
+    try {
+      const media = await fetchContentAssetMedia(asset.id);
+      const latest = media.find((item) => item.media_url === asset.generated_media_url) || media[0];
+      if (!latest) throw new Error("No stored generated image is available for this content asset");
+      const result = await attachMediaToCampaign(workflowId, selectedCampaignId, latest.id);
+      onWorkflowStateUpdated?.(result.state);
+      alert("Stored image attached to the selected campaign draft.");
+    } catch (err: any) {
+      alert(err.message || "Failed to attach media to campaign");
+    } finally {
+      setAttachingMediaAssetId(null);
+    }
+  };
+
   // Filter assets
   const filteredAssets = assets.filter((a) => {
     if (activeTab === "social_ads" && !["social_post", "ad_copy"].includes(a.asset_type)) return false;
@@ -142,7 +211,7 @@ export const ContentStudioView: React.FC<ContentStudioViewProps> = ({ onNavigate
               AI Content Studio & Creative Lab
             </h2>
             <span className="badge" style={{ background: "rgba(16, 185, 129, 0.15)", color: "#34d399", border: "1px solid rgba(16, 185, 129, 0.3)" }}>
-              Herbally Brand-Grounded
+              {brandName} Brand-Grounded
             </span>
           </div>
           <p style={{ color: "var(--text-secondary)", fontSize: "0.88rem" }}>
@@ -327,6 +396,19 @@ export const ContentStudioView: React.FC<ContentStudioViewProps> = ({ onNavigate
                       </div>
                     </div>
                   )}
+
+                  {asset.generated_media_url && (
+                    <div style={{ marginBottom: "12px" }}>
+                      <ProtectedMediaImage
+                        mediaUrl={asset.generated_media_url}
+                        alt={`Generated creative for ${asset.title}`}
+                        style={{ width: "100%", maxHeight: "260px", objectFit: "cover", borderRadius: "8px", border: "1px solid rgba(16, 185, 129, 0.3)" }}
+                      />
+                      <div style={{ marginTop: "6px", fontSize: "0.72rem", color: "#34d399" }}>
+                        Generated image stored locally — not published or used in a live campaign.
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* Card Actions Footer */}
@@ -363,6 +445,27 @@ export const ContentStudioView: React.FC<ContentStudioViewProps> = ({ onNavigate
                         style={{ padding: "4px 10px", fontSize: "0.75rem", display: "flex", alignItems: "center", gap: "4px" }}
                       >
                         <Calendar size={12} /> Schedule
+                      </button>
+                    )}
+                    {asset.image_prompt && !asset.generated_media_url && (
+                      <button
+                        onClick={() => handleGenerateImage(asset)}
+                        disabled={generatingMediaAssetId === asset.id}
+                        className="btn-secondary"
+                        style={{ padding: "4px 10px", fontSize: "0.75rem" }}
+                      >
+                        {generatingMediaAssetId === asset.id ? "Generating..." : "Generate Image"}
+                      </button>
+                    )}
+                    {asset.generated_media_url && (
+                      <button
+                        onClick={() => handleAttachLatestMedia(asset)}
+                        disabled={!workflowId || !selectedCampaignId || attachingMediaAssetId === asset.id}
+                        className="btn-secondary"
+                        title={!workflowId || !selectedCampaignId ? "Start a workflow and select a campaign first" : "Attach stored image to the selected campaign"}
+                        style={{ padding: "4px 10px", fontSize: "0.75rem" }}
+                      >
+                        {attachingMediaAssetId === asset.id ? "Attaching..." : "Attach to Campaign"}
                       </button>
                     )}
                   </div>

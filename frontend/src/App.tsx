@@ -10,6 +10,12 @@ import { IntegrationsView } from "./components/IntegrationsView";
 import { CustomerMessagesView } from "./components/CustomerMessagesView";
 import { BusinessPresenceView } from "./components/BusinessPresenceView";
 import { SettingsView } from "./components/SettingsView";
+import { UniversalOnboardingModal } from "./components/UniversalOnboardingModal";
+import { MediaLibraryView } from "./components/MediaLibraryView";
+import { ProductStudioView } from "./components/ProductStudioView";
+import { VideoStudioView } from "./components/VideoStudioView";
+import { CampaignManagerView } from "./components/CampaignManagerView";
+import { UnifiedWorkflowView } from "./components/UnifiedWorkflowView";
 
 // Preserved core closed-loop components
 import { ProductSetupSection } from "./components/ProductSetupSection";
@@ -22,8 +28,10 @@ import { RevisedCampaignSection } from "./components/RevisedCampaignSection";
 
 import {
   fetchProducts,
+  fetchBrands,
+  fetchOnboardingStatus,
   runMarketingWorkflow,
-  approveCampaign,
+  approveWorkflowCampaign,
   launchSimulatedCampaign,
   iterateNextCampaign,
   uploadCampaignCsv,
@@ -34,11 +42,15 @@ import {
   reviseCampaign,
   createCampaignFromAssets,
 } from "./services/api";
-import type { ProductItem, MarketingState } from "./types";
-import { AlertCircle, ShieldCheck } from "lucide-react";
+import type { ProductItem, MarketingState, BrandProfile, MediaAssetItem } from "./types";
+import { AlertCircle, ShieldCheck, Plus } from "lucide-react";
 
 export function App() {
   const [currentModule, setCurrentModule] = useState<string>("dashboard");
+  const [brands, setBrands] = useState<BrandProfile[]>([]);
+  const [activeBrand, setActiveBrand] = useState<BrandProfile | null>(null);
+  const [isOnboardingOpen, setIsOnboardingOpen] = useState<boolean>(false);
+  const [studioSelectedAsset, setStudioSelectedAsset] = useState<MediaAssetItem | null>(null);
   const [products, setProducts] = useState<ProductItem[]>([]);
   const [selectedProduct, setSelectedProduct] = useState<ProductItem | null>(null);
   const [workflowId, setWorkflowId] = useState<string | null>(null);
@@ -97,19 +109,57 @@ export function App() {
     if (selectedCampaignId) localStorage.setItem("dm_selected_campaign_id", selectedCampaignId);
   }, [currentModule, workflowId, marketingState, currentStep, selectedCampaignId]);
 
-  // Load sample products on start
+  // Load brands and check onboarding status on mount
   useEffect(() => {
-    fetchProducts()
-      .then((prods) => {
-        setProducts(prods);
-        if (prods.length > 0 && !selectedProduct) {
-          setSelectedProduct(prods[0]);
+    fetchBrands()
+      .then((bList) => {
+        setBrands(bList);
+        const savedBrandId = localStorage.getItem("dm_active_brand_id");
+        const matched = bList.find((b) => b.id === savedBrandId) || bList[0];
+        if (matched) {
+          setActiveBrand(matched);
         }
       })
-      .catch((err) => {
-        console.error("Error loading products:", err);
-      });
+      .catch((err) => console.warn("Error loading brands:", err));
+
+    fetchOnboardingStatus()
+      .then((status) => {
+        if (!status.is_onboarded) {
+          setIsOnboardingOpen(true);
+        }
+      })
+      .catch((err) => console.warn("Error checking onboarding status:", err));
   }, []);
+
+  // Sync activeBrand to localStorage and load its products
+  useEffect(() => {
+    if (activeBrand) {
+      localStorage.setItem("dm_active_brand_id", activeBrand.id);
+      fetchProducts(activeBrand.id)
+        .then((prods) => {
+          setProducts(prods);
+          if (prods.length > 0) {
+            setSelectedProduct(prods[0]);
+          } else {
+            setSelectedProduct(null);
+          }
+        })
+        .catch((err) => console.warn("Error loading products for brand:", err));
+    }
+  }, [activeBrand?.id]);
+
+  const handleOnboardingComplete = (brand: BrandProfile, product?: ProductItem) => {
+    setBrands((prev) => {
+      const exists = prev.some((b) => b.id === brand.id);
+      return exists ? prev.map((b) => (b.id === brand.id ? brand : b)) : [brand, ...prev];
+    });
+    setActiveBrand(brand);
+    if (product) {
+      setProducts((prev) => [product, ...prev]);
+      setSelectedProduct(product);
+    }
+    setCurrentModule("dashboard");
+  };
 
   // Update selected campaign ID default when marketingState changes
   useEffect(() => {
@@ -197,7 +247,7 @@ export function App() {
     setIsLoading(true);
     setErrorMessage(null);
     try {
-      const res = await approveCampaign(workflowId, campaignId);
+      const res = await approveWorkflowCampaign(workflowId, campaignId);
       setMarketingState(res.state);
     } catch (err: any) {
       setErrorMessage(err.message || "Approval failed");
@@ -308,9 +358,13 @@ export function App() {
 
   // Nav titles map
   const moduleTitles: Record<string, string> = {
+    unified: "Unified Studio & Campaign Journey (Product C)",
     dashboard: "Command Center Overview",
     brand: "Brand Intelligence & Verified Guidelines",
     products: "Products, Strategy & Personas",
+    studio: "AI Product Photography Studio",
+    video: "AI Video Generation & Animation Studio",
+    media: "Central Media Asset Library",
     content: "AI Content Studio & Creative Lab",
     calendar: "Publishing Calendar & Scheduling",
     campaigns: "Campaign Manager & Sandbox Execution",
@@ -329,7 +383,7 @@ export function App() {
       <SidebarNavigation
         currentModule={currentModule}
         onSelectModule={(mod) => setCurrentModule(mod)}
-        brandName="Herbally"
+        brandName={activeBrand?.name || "Brand"}
       />
 
       {/* Main Workspace Content Area */}
@@ -359,10 +413,57 @@ export function App() {
             </span>
           </div>
 
-          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-            <span style={{ fontSize: "0.8rem", color: "var(--text-muted)" }}>
-              Brand: <strong style={{ color: "var(--text-primary)" }}>Herbally Pure Neem Bedsheet</strong>
-            </span>
+          <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
+            {/* Active Brand Switcher */}
+            {brands.length > 0 ? (
+              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                <span style={{ fontSize: "0.8rem", color: "var(--text-muted)" }}>Brand:</span>
+                <select
+                  value={activeBrand?.id || (brands[0] ? brands[0].id : "")}
+                  onChange={(e) => {
+                    const found = brands.find((b) => b.id === e.target.value);
+                    if (found) setActiveBrand(found);
+                  }}
+                  style={{
+                    padding: "6px 12px",
+                    background: "rgba(20, 27, 44, 0.95)",
+                    border: "1px solid rgba(99, 102, 241, 0.4)",
+                    borderRadius: "8px",
+                    color: "#ffffff",
+                    fontSize: "0.82rem",
+                    fontWeight: 600,
+                  }}
+                >
+                  {brands.map((b) => (
+                    <option key={b.id} value={b.id}>
+                      {b.name} ({b.industry})
+                    </option>
+                  ))}
+                </select>
+              </div>
+            ) : (
+              <span style={{ fontSize: "0.8rem", color: "var(--text-muted)" }}>
+                Brand: <strong style={{ color: "var(--text-primary)" }}>{activeBrand?.name || "Workspace"}</strong>
+              </span>
+            )}
+
+            <button
+              onClick={() => setIsOnboardingOpen(true)}
+              className="btn-secondary"
+              style={{
+                fontSize: "0.78rem",
+                padding: "6px 12px",
+                display: "flex",
+                alignItems: "center",
+                gap: "5px",
+                borderColor: "rgba(16, 185, 129, 0.4)",
+                color: "#34d399",
+              }}
+            >
+              <Plus size={13} />
+              Onboard Brand
+            </button>
+
             <span className="badge" style={{ background: "rgba(59, 130, 246, 0.12)", color: "#60a5fa" }}>
               Simulated Sandbox (0 Spend)
             </span>
@@ -382,11 +483,28 @@ export function App() {
 
         {/* Dynamic Module Views */}
         <main style={{ flex: 1, padding: "28px", overflowY: "auto" }}>
+          {/* 0. Product C Unified Workflow View */}
+          {currentModule === "unified" && (
+            <UnifiedWorkflowView
+              activeBrand={activeBrand}
+              brands={brands}
+              products={products}
+              onBrandSelect={(b) => setActiveBrand(b)}
+              onOpenOnboarding={() => setIsOnboardingOpen(true)}
+              onNavigate={(mod: string) => setCurrentModule(mod)}
+              onNavigateToModule={(mod: string) => setCurrentModule(mod)}
+            />
+          )}
+
           {/* 1. Dashboard View */}
           {currentModule === "dashboard" && (
             <DashboardView
               onNavigate={(mod) => setCurrentModule(mod)}
               marketingState={marketingState}
+              brandId={activeBrand?.id}
+              brandName={activeBrand?.name}
+              activeBrand={activeBrand}
+              onOpenOnboarding={() => setIsOnboardingOpen(true)}
               onSelectWorkflowStage={(stageNum) => {
                 setCurrentStep(stageNum);
               }}
@@ -394,7 +512,15 @@ export function App() {
           )}
 
           {/* 2. Brand Intelligence View */}
-          {currentModule === "brand" && <BrandIntelligenceView />}
+          {currentModule === "brand" && (
+            <BrandIntelligenceView
+              activeBrand={activeBrand}
+              onBrandUpdated={(b) => {
+                setActiveBrand(b);
+                setBrands((prev) => prev.map((item) => (item.id === b.id ? b : item)));
+              }}
+            />
+          )}
 
           {/* 3. Products & Strategy Section */}
           {currentModule === "products" && (
@@ -424,6 +550,10 @@ export function App() {
                   products={products}
                   selectedProduct={selectedProduct}
                   onSelectProduct={setSelectedProduct}
+                  onProductCreated={(p) => setProducts((prev) => [p, ...prev])}
+                  onProductUpdated={(p) => setProducts((prev) => prev.map((item) => (item.id === p.id ? p : item)))}
+                  activeBrandName={activeBrand?.name}
+                  activeBrandId={activeBrand?.id}
                   onSubmitWorkflow={handleRunWorkflow}
                   isLoading={isLoading}
                 />
@@ -438,44 +568,119 @@ export function App() {
             </div>
           )}
 
+          {/* AI Product Photography Studio View */}
+          {currentModule === "studio" && (
+            <ProductStudioView
+              activeBrand={activeBrand}
+              products={products}
+              preselectedAsset={studioSelectedAsset}
+              onProductCreated={(p) => setProducts((prev) => [p, ...prev])}
+              onNavigateToLibrary={() => setCurrentModule("media")}
+              onNavigateToCampaign={(campId) => {
+                if (campId) setSelectedCampaignId(campId);
+                setCurrentModule("campaigns");
+              }}
+            />
+          )}
+
+          {/* AI Video Generation & Animation Studio View */}
+          {currentModule === "video" && (
+            <VideoStudioView
+              activeBrand={activeBrand}
+              products={products}
+              preselectedAsset={studioSelectedAsset}
+              onNavigateToLibrary={() => setCurrentModule("media")}
+              onNavigateToCampaign={(campId) => {
+                if (campId) setSelectedCampaignId(campId);
+                setCurrentModule("campaigns");
+              }}
+            />
+          )}
+
+          {/* Central Media Asset Library View */}
+          {currentModule === "media" && (
+            <MediaLibraryView
+              activeBrand={activeBrand}
+              onNavigateToStudio={(asset) => {
+                setStudioSelectedAsset(asset || null);
+                setCurrentModule("studio");
+              }}
+              onNavigateToVideo={(asset) => {
+                setStudioSelectedAsset(asset || null);
+                setCurrentModule("video");
+              }}
+              onNavigateToCampaign={(campId) => {
+                if (campId) setSelectedCampaignId(campId);
+                setCurrentModule("campaigns");
+              }}
+            />
+          )}
+
           {/* 4. AI Content Studio View */}
           {currentModule === "content" && (
             <ContentStudioView
               onNavigateToCalendar={() => setCurrentModule("calendar")}
+              workflowId={workflowId || undefined}
+              selectedCampaignId={selectedCampaignId}
+              campaigns={marketingState?.campaign_plan || []}
+              onWorkflowStateUpdated={setMarketingState}
+              brandId={activeBrand?.id}
+              brandName={activeBrand?.name}
             />
           )}
 
           {/* 5. Content Calendar View */}
-          {currentModule === "calendar" && <ContentCalendarView />}
+          {currentModule === "calendar" && <ContentCalendarView brandId={activeBrand?.id} />}
 
-          {/* 6. Campaign Manager View */}
+          {/* 6. Campaign Manager & Orchestration View */}
           {currentModule === "campaigns" && (
-            <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
-              <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
-                <button
-                  onClick={() => setCurrentStep(4)}
-                  className={currentStep === 4 ? "btn-primary" : "btn-secondary"}
-                  style={{ padding: "8px 16px", fontSize: "0.85rem" }}
-                >
-                  Campaign Configurations
-                </button>
-                <button
-                  onClick={() => setCurrentStep(5)}
-                  className={currentStep === 5 ? "btn-primary" : "btn-secondary"}
-                  style={{ padding: "8px 16px", fontSize: "0.85rem" }}
-                >
-                  Simulated Execution Dashboard
-                </button>
-                {marketingState?.current_iteration && marketingState.current_iteration > 1 && (
+            <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+              {marketingState && (
+                <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
                   <button
-                    onClick={() => setCurrentStep(8)}
-                    className={currentStep === 8 ? "btn-primary" : "btn-secondary"}
-                    style={{ padding: "8px 16px", fontSize: "0.85rem" }}
+                    onClick={() => setCurrentStep(10)}
+                    className={currentStep === 10 || currentStep < 4 || currentStep > 8 ? "btn-primary" : "btn-secondary"}
+                    style={{ padding: "6px 14px", fontSize: "0.82rem" }}
                   >
-                    Revised Campaign (Iteration {marketingState.current_iteration})
+                    🚀 AI Campaign Planner & Creative Orchestrator
                   </button>
-                )}
-              </div>
+                  <button
+                    onClick={() => setCurrentStep(4)}
+                    className={currentStep === 4 ? "btn-primary" : "btn-secondary"}
+                    style={{ padding: "6px 14px", fontSize: "0.82rem" }}
+                  >
+                    Legacy Plan Config
+                  </button>
+                  <button
+                    onClick={() => setCurrentStep(5)}
+                    className={currentStep === 5 ? "btn-primary" : "btn-secondary"}
+                    style={{ padding: "6px 14px", fontSize: "0.82rem" }}
+                  >
+                    Simulated Sandbox Execution
+                  </button>
+                  {marketingState?.current_iteration && marketingState.current_iteration > 1 && (
+                    <button
+                      onClick={() => setCurrentStep(8)}
+                      className={currentStep === 8 ? "btn-primary" : "btn-secondary"}
+                      style={{ padding: "6px 14px", fontSize: "0.82rem" }}
+                    >
+                      Revised Campaign (It. {marketingState.current_iteration})
+                    </button>
+                  )}
+                </div>
+              )}
+
+              {(currentStep === 10 || !marketingState || currentStep < 4 || currentStep > 8) && (
+                <CampaignManagerView
+                  activeBrand={activeBrand}
+                  products={products}
+                  workflowId={workflowId}
+                  marketingState={marketingState}
+                  onNavigateToStudio={() => setCurrentModule("studio")}
+                  onNavigateToVideo={() => setCurrentModule("video")}
+                  onNavigateToLibrary={() => setCurrentModule("media")}
+                />
+              )}
 
               {currentStep === 4 && marketingState && (
                 <CampaignPlanSection
@@ -519,22 +724,13 @@ export function App() {
                   isLoading={isLoading}
                 />
               )}
-
-              {!marketingState && (
-                <div className="glass-panel" style={{ padding: "40px", textAlign: "center" }}>
-                  <p style={{ color: "var(--text-muted)", marginBottom: "16px" }}>
-                    No campaigns initialized yet. Kick off the strategy workflow in Products & Strategy first.
-                  </p>
-                  <button onClick={() => setCurrentModule("products")} className="btn-primary" style={{ padding: "8px 18px" }}>
-                    Go to Products & Strategy
-                  </button>
-                </div>
-              )}
             </div>
           )}
 
           {/* 7. AI Marketing Assistant View */}
-          {currentModule === "assistant" && <AssistantView />}
+          {currentModule === "assistant" && (
+            <AssistantView brandId={activeBrand?.id} brandName={activeBrand?.name} />
+          )}
 
           {/* 8. Analytics & Optimization View */}
           {currentModule === "analytics" && (
@@ -598,7 +794,9 @@ export function App() {
           {currentModule === "customer_messages" && <CustomerMessagesView />}
 
           {/* 12. Nested: Business Presence & Landing Page */}
-          {currentModule === "business_presence" && <BusinessPresenceView />}
+          {currentModule === "business_presence" && (
+            <BusinessPresenceView brandId={activeBrand?.id} />
+          )}
 
           {/* 13. Settings View */}
           {currentModule === "settings" && (
@@ -609,6 +807,12 @@ export function App() {
           )}
         </main>
       </div>
+
+      <UniversalOnboardingModal
+        isOpen={isOnboardingOpen}
+        onClose={() => setIsOnboardingOpen(false)}
+        onComplete={handleOnboardingComplete}
+      />
     </div>
   );
 }

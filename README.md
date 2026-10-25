@@ -83,9 +83,33 @@ The platform is organized via a persistent SaaS sidebar into three primary funct
 ### 1. Backend Setup
 ```bash
 cd backend
+copy .env.example .env
 pip install -r requirements.txt
 python -m uvicorn app.main:app --host 127.0.0.1 --port 8001 --reload
 ```
+
+### Authentication configuration
+
+Local development uses the deliberately local-only identity in `backend/.env`:
+`AUTH_MODE=development` and an `AUTH_DEV_TOKEN` of at least 16 characters.
+`frontend/.env` may contain the same token as `VITE_HERBALLY_API_TOKEN` for a
+localhost-only workflow. Do not use that mechanism for a deployed frontend.
+
+For production, set `ENV=production`, `AUTH_MODE=token`, explicit
+`CORS_ORIGINS`, and inject `AUTH_TOKENS_JSON` from a secret manager (never from
+the repository or a Vite variable). It maps a server-side bearer token to a
+principal, for example:
+
+```json
+{"replace-with-a-long-random-secret":{"subject":"user-123","workspace_id":"workspace-123","role":"owner"}}
+```
+
+Production startup rejects `AUTH_MODE=development`, an empty token mapping, and
+a wildcard CORS origin. Rotate tokens in the secret manager and restart the API
+after revocation. The current frontend is suitable for local development only;
+a production deployment should exchange an authenticated server-side session
+for short-lived API credentials rather than embedding a bearer token in the
+browser bundle.
 * Backend API: `http://127.0.0.1:8001`
 * Interactive API Documentation (Swagger UI): `http://127.0.0.1:8001/docs`
 

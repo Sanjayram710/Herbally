@@ -7,6 +7,8 @@ from app.config import settings
 from app.database import init_db, SessionLocal
 from app.models import Product
 from app.api.routes import router
+from app.middleware import RequestSizeLimitMiddleware
+from app.services.authorization_service import AuthorizationService
 
 
 def seed_sample_products():
@@ -43,8 +45,9 @@ def seed_sample_products():
         from app.services.landing_page_service import LandingPageService
 
         BrandService.get_or_create_default_brand(db)
-        AutomationService.seed_default_rules(db)
-        IntegrationService.seed_default_integrations(db)
+        AuthorizationService.bootstrap_identities_and_legacy_data(db)
+        AutomationService.seed_default_rules(db, settings.LEGACY_WORKSPACE_ID)
+        IntegrationService.seed_default_integrations(db, settings.LEGACY_WORKSPACE_ID)
         CustomerMessageService.seed_sample_messages(db)
         LandingPageService.get_or_create_draft(db)
 
@@ -74,10 +77,12 @@ app = FastAPI(
     lifespan=lifespan
 )
 
+app.add_middleware(RequestSizeLimitMiddleware)
+
 # Enable CORS for frontend Vite application
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Permits local development on any port
+    allow_origins=settings.CORS_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

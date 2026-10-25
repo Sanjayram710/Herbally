@@ -11,7 +11,7 @@ from app.services.dashboard_service import DashboardService
 from app.services.assistant_service import AssistantService
 from app.schemas.content import ContentGenerateRequest
 
-client = TestClient(app)
+client = TestClient(app, headers={"Authorization": "Bearer herbally-local-dev-token"})
 
 
 def test_ssrf_protection_rejects_forbidden_hosts():

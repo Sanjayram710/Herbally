@@ -10,24 +10,28 @@ import {
 import { fetchLandingPageDraft, updateLandingPageDraft } from "../services/api";
 import type { LandingPageDraftData } from "../types";
 
-export const BusinessPresenceView: React.FC = () => {
+interface BusinessPresenceViewProps {
+  brandId?: string;
+}
+
+export const BusinessPresenceView: React.FC<BusinessPresenceViewProps> = ({ brandId }) => {
   const [draft, setDraft] = useState<LandingPageDraftData | null>(null);
   const [previewDevice, setPreviewDevice] = useState<"desktop" | "mobile">("desktop");
   const [isSaving, setIsSaving] = useState<boolean>(false);
   const [saveSuccess, setSaveSuccess] = useState<boolean>(false);
 
   useEffect(() => {
-    fetchLandingPageDraft("herbally-brand")
+    fetchLandingPageDraft(brandId)
       .then((d) => setDraft(d))
       .catch((err) => console.error("Error loading landing page draft:", err));
-  }, []);
+  }, [brandId]);
 
   const handleSave = async () => {
     if (!draft) return;
     setIsSaving(true);
     setSaveSuccess(false);
     try {
-      const res = await updateLandingPageDraft("herbally-brand", {
+      const res = await updateLandingPageDraft(brandId, {
         title: draft.title,
         hero_headline: draft.hero_headline,
         hero_subheadline: draft.hero_subheadline,
@@ -82,7 +86,7 @@ export const BusinessPresenceView: React.FC = () => {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = "herbally-landing-page.html";
+    a.download = `${draft.hero_headline ? draft.hero_headline.slice(0, 20).toLowerCase().replace(/[^a-z0-9]/g, "-") : "brand"}-landing-page.html`;
     a.click();
     URL.revokeObjectURL(url);
   };

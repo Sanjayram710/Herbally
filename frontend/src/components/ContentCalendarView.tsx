@@ -8,7 +8,11 @@ import {
 import { fetchContentSchedules, triggerPublishDemo, fetchContentAssets } from "../services/api";
 import type { ContentScheduleItem, ContentAssetItem } from "../types";
 
-export const ContentCalendarView: React.FC = () => {
+interface ContentCalendarViewProps {
+  brandId?: string;
+}
+
+export const ContentCalendarView: React.FC<ContentCalendarViewProps> = ({ brandId }) => {
   const [schedules, setSchedules] = useState<ContentScheduleItem[]>([]);
   const [assets, setAssets] = useState<ContentAssetItem[]>([]);
   const [viewMode, setViewMode] = useState<"list" | "calendar">("list");
@@ -17,7 +21,8 @@ export const ContentCalendarView: React.FC = () => {
 
   const loadData = () => {
     setIsLoading(true);
-    Promise.all([fetchContentSchedules(), fetchContentAssets("herbally-brand")])
+    const targetBrand = brandId || "";
+    Promise.all([fetchContentSchedules(), fetchContentAssets(targetBrand)])
       .then(([scheds, asts]) => {
         setSchedules(scheds);
         setAssets(asts);
@@ -28,7 +33,7 @@ export const ContentCalendarView: React.FC = () => {
 
   useEffect(() => {
     loadData();
-  }, []);
+  }, [brandId]);
 
   const handlePublishDemo = async (scheduleId: string) => {
     setExecutingId(scheduleId);

@@ -1,5 +1,5 @@
 import datetime
-from sqlalchemy import Column, String, Float, Text, JSON, DateTime
+from sqlalchemy import Column, ForeignKey, String, Float, Text, JSON, DateTime
 from app.database import Base
 
 
@@ -7,6 +7,8 @@ class WorkflowRun(Base):
     __tablename__ = "workflow_runs"
 
     id = Column(String, primary_key=True, index=True)
+    # Nullable for the additive migration of existing single-tenant databases.
+    workspace_id = Column(String, ForeignKey("workspaces.id"), nullable=True, index=True)
     product_id = Column(String, nullable=True)
     brand = Column(String, default="Herbally")
     marketing_goal = Column(String, nullable=False)

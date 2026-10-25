@@ -17,14 +17,40 @@ from app.schemas.state import (
     OptimizationRecommendation,
     NextBestAction,
 )
-from app.schemas.product import ProductCreate, ProductRead, WorkflowTriggerRequest
+from app.schemas.product import ProductCreate, ProductRead, ProductUpdate, WorkflowTriggerRequest
 from app.schemas.analytics import CampaignRowInput, CampaignDataUploadResponse, AnalyticsRequest
 from app.schemas.brand import BrandProfileCreate, BrandProfileRead, BrandProfileUpdate, WebsiteIngestRequest, WebsiteIngestResponse
 from app.schemas.content import ContentAssetCreate, ContentAssetRead, ContentAssetUpdate, ContentScheduleCreate, ContentScheduleRead, ContentGenerateRequest
 from app.schemas.integration import IntegrationRead, IntegrationTestRequest, IntegrationTestResponse
-from app.schemas.automation import AutomationRuleRead, AutomationRuleToggle, AutomationExecutionRead
+from app.schemas.automation import AutomationRuleCreate, AutomationRuleRead, AutomationRuleToggle, AutomationRuleUpdate, AutomationExecutionRead
 from app.schemas.assistant import AssistantMessageCreate, AssistantMessageRead, AssistantResponse
 from app.schemas.dashboard import DashboardSummary
+from app.schemas.media import (
+    CampaignMediaAttachRequest,
+    ImageGenerationRequest,
+    MediaAssetRead,
+    MediaGenerationResponse,
+    ProviderInfoRead,
+    StudioGenerateRequest,
+    StudioGenerateResponse,
+    MediaDeleteResponse,
+)
+from app.schemas.onboarding import UniversalOnboardingRequest, UniversalOnboardingResponse, OnboardingStatusResponse
+from app.schemas.video import VideoJobCreateRequest, VideoJobRead, VideoProviderInfoRead
+from app.schemas.campaign import (
+    CampaignCreateRequest,
+    CampaignUpdateRequest,
+    CampaignApprovalActionRequest,
+    CampaignApprovalHistoryRead,
+    CampaignContentCreateRequest,
+    CampaignContentUpdateRequest,
+    CampaignContentVariantRequest,
+    CampaignAssetAttachRequest,
+    CampaignStrategyGenerateRequest,
+    CampaignContentRead,
+    CampaignCalendarEntryRead,
+    CampaignRead,
+)
 
 __all__ = [
     "MarketingState",
@@ -65,10 +91,19 @@ __all__ = [
     "IntegrationTestRequest",
     "IntegrationTestResponse",
     "AutomationRuleRead",
+    "AutomationRuleCreate",
     "AutomationRuleToggle",
+    "AutomationRuleUpdate",
     "AutomationExecutionRead",
     "AssistantMessageCreate",
     "AssistantMessageRead",
     "AssistantResponse",
     "DashboardSummary",
+    "CampaignMediaAttachRequest",
+    "ImageGenerationRequest",
+    "MediaAssetRead",
+    "MediaGenerationResponse",
+    "VideoJobCreateRequest",
+    "VideoJobRead",
+    "VideoProviderInfoRead",
 ]

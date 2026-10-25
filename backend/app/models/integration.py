@@ -1,12 +1,16 @@
 import datetime
-from sqlalchemy import Column, String, Boolean, JSON, DateTime
+from sqlalchemy import Column, String, Boolean, JSON, DateTime, ForeignKey
 from app.database import Base
 
 
 class IntegrationConfig(Base):
     __tablename__ = "integration_configs"
 
-    id = Column(String, primary_key=True, index=True)  # meta_ads, google_ads, instagram_graph, ga4, openai, tavily
+    # Legacy rows retain their provider ID. New workspaces use a unique record
+    # ID while connector_key retains the provider identifier.
+    id = Column(String, primary_key=True, index=True)
+    workspace_id = Column(String, ForeignKey("workspaces.id"), nullable=True, index=True)
+    connector_key = Column(String, nullable=True, index=True)
     name = Column(String, nullable=False)
     category = Column(String, nullable=False)  # advertising, social, analytics, ai, search
     # Status: connected | unconfigured | disconnected | simulated_sandbox

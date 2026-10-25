@@ -9,6 +9,8 @@ __pycache__/
 # Database
 *.sqlite3
 *.db
+backend/media/
+data/media/
 
 # Node
 node_modules/
@@ -19,7 +21,11 @@ dist/
 reports/*.pdf
 reports/*.json
 
-# Logs
+# Logs & Scratch
 *.log
 .coverage
 .pytest_cache/
+backend/scratch/
+backend/test_*.png
+testsprite_tests/tmp/
+testsprite_tests/tmp/config.json

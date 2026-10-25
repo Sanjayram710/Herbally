@@ -9,11 +9,25 @@ from app.services.scraper_service import SafeScraperService
 
 class BrandService:
     @staticmethod
-    def get_or_create_default_brand(db: Session) -> BrandProfile:
+    def get_or_create_default_brand(db: Session, workspace_id: Optional[str] = None) -> BrandProfile:
+        from app.config import settings
+
+        # Check if an existing brand is in the requested workspace
+        if workspace_id:
+            existing = (
+                db.query(BrandProfile)
+                .filter(BrandProfile.workspace_id == workspace_id)
+                .first()
+            )
+            if existing:
+                return existing
+
+        # For the legacy workspace or unspecified workspace, preserve herbally-brand
         brand = db.query(BrandProfile).filter(BrandProfile.id == "herbally-brand").first()
         if not brand:
             brand = BrandProfile(
                 id="herbally-brand",
+                workspace_id=workspace_id or settings.LEGACY_WORKSPACE_ID,
                 name="Herbally",
                 industry="Herbal Textiles & Sleep Wellness",
                 description="Herbally crafts 100% GOTS organic cotton bedsheets infused with natural botanical Neem extracts for restorative, skin-conscious sleep.",
@@ -36,7 +50,9 @@ class BrandService:
                     "Treats chronic insomnia",
                     "Clinically proven medical therapy",
                     "Guarantees permanent acne cure"
-                ]
+                ],
+                geographic_market="India",
+                preferred_language="English",
             )
             db.add(brand)
             db.commit()
@@ -44,9 +60,12 @@ class BrandService:
         return brand
 
     @staticmethod
-    def list_brands(db: Session) -> List[BrandProfile]:
-        brands = db.query(BrandProfile).all()
-        if not brands:
+    def list_brands(db: Session, workspace_id: Optional[str] = None) -> List[BrandProfile]:
+        query = db.query(BrandProfile)
+        if workspace_id:
+            query = query.filter(BrandProfile.workspace_id == workspace_id)
+        brands = query.all()
+        if not brands and not workspace_id:
             default = BrandService.get_or_create_default_brand(db)
             return [default]
         return brands
@@ -56,10 +75,11 @@ class BrandService:
         return db.query(BrandProfile).filter(BrandProfile.id == brand_id).first()
 
     @staticmethod
-    def create_brand(db: Session, data: BrandProfileCreate) -> BrandProfile:
+    def create_brand(db: Session, data: BrandProfileCreate, workspace_id: Optional[str] = None) -> BrandProfile:
         brand_id = data.id or f"brand-{uuid.uuid4().hex[:8]}"
         brand = BrandProfile(
             id=brand_id,
+            workspace_id=workspace_id or data.workspace_id,
             name=data.name,
             industry=data.industry,
             description=data.description,
@@ -72,7 +92,10 @@ class BrandService:
             logo_url=data.logo_url,
             brand_guidelines=data.brand_guidelines,
             factual_claims=data.factual_claims,
-            prohibited_claims=data.prohibited_claims
+            prohibited_claims=data.prohibited_claims,
+            geographic_market=data.geographic_market or "India",
+            preferred_language=data.preferred_language or "English",
+            budget_range=data.budget_range,
         )
         db.add(brand)
         db.commit()

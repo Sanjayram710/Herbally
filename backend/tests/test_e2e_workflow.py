@@ -5,7 +5,7 @@ from app.services.orchestrator import MarketingOrchestrator
 from app.schemas.product import WorkflowTriggerRequest
 from app.services.report_service import ReportService
 
-client = TestClient(app)
+client = TestClient(app, headers={"Authorization": "Bearer herbally-local-dev-token"})
 
 
 def test_e2e_orchestrator_and_reporting():

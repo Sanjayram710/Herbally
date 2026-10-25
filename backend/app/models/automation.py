@@ -8,6 +8,7 @@ class AutomationRule(Base):
     __tablename__ = "automation_rules"
 
     id = Column(String, primary_key=True, index=True)
+    workspace_id = Column(String, ForeignKey("workspaces.id"), nullable=True, index=True)
     name = Column(String, nullable=False)
     description = Column(String, nullable=False)
     trigger_type = Column(String, nullable=False)  # schedule_daily, schedule_weekly, metric_threshold, approval_pending
@@ -27,6 +28,7 @@ class AutomationExecution(Base):
     __tablename__ = "automation_executions"
 
     id = Column(String, primary_key=True, index=True)
+    workspace_id = Column(String, ForeignKey("workspaces.id"), nullable=True, index=True)
     rule_id = Column(String, ForeignKey("automation_rules.id"), nullable=False)
     rule_name = Column(String, nullable=False)
     # Status: success | failed | skipped

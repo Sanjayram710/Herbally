@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Check, Clock, Plus } from "lucide-react";
 import type { MarketingState } from "../types";
+import { ProtectedMediaImage } from "./ProtectedMediaImage";
 
 interface CampaignPlanSectionProps {
   state: MarketingState;
@@ -265,6 +266,19 @@ export const CampaignPlanSection: React.FC<CampaignPlanSectionProps> = ({
                 <div><strong>Messaging:</strong> {camp.messaging}</div>
                 <div><strong>CTA:</strong> {camp.call_to_action}</div>
               </div>
+
+              {typeof camp.linked_assets?.latest_generated_media_url === "string" && (
+                <div style={{ marginTop: "12px" }}>
+                  <ProtectedMediaImage
+                    mediaUrl={camp.linked_assets.latest_generated_media_url}
+                    alt={`Stored creative linked to ${camp.campaign_name}`}
+                    style={{ width: "100%", maxWidth: "360px", maxHeight: "220px", objectFit: "cover", borderRadius: "8px", border: "1px solid rgba(16, 185, 129, 0.3)" }}
+                  />
+                  <div style={{ fontSize: "0.72rem", color: "#34d399", marginTop: "5px" }}>
+                    Stored generated creative attached to this campaign draft. It has not been published.
+                  </div>
+                </div>
+              )}
 
               {camp.primary_kpis && camp.primary_kpis.length > 0 && (
                 <div style={{ marginTop: "10px", display: "flex", gap: "8px", flexWrap: "wrap", fontSize: "0.75rem" }}>

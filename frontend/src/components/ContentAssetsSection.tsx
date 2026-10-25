@@ -185,7 +185,7 @@ export const ContentAssetsSection: React.FC<ContentAssetsSectionProps> = ({
             <div style={{ marginBottom: "8px" }}>
               <strong style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>Sample Headlines:</strong>
               <div style={{ fontSize: "0.85rem", color: "#38bdf8", marginTop: "4px" }}>
-                • {assets.google_search_ad.headlines?.[0] || "Herbally Pure Neem Bedsheet"}
+                • {assets.google_search_ad.headlines?.[0] || "Premium Certified Product"}
                 <br />
                 • {assets.google_search_ad.headlines?.[1] || "100% GOTS Certified Organic Cotton"}
               </div>

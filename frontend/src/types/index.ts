@@ -261,6 +261,8 @@ export interface MarketingState {
 
 export interface ProductItem {
   id: string;
+  workspace_id?: string;
+  brand_id?: string;
   name: string;
   brand: string;
   category?: string;
@@ -270,15 +272,20 @@ export interface ProductItem {
   explicitly_supported_benefits: string[];
   prohibited_medical_claims: string[];
   official_url?: string;
+  image_url?: string;
 }
 
 export interface BrandProfile {
   id: string;
+  workspace_id?: string;
   name: string;
   industry: string;
   description: string;
   website_url?: string;
   target_audience: string;
+  geographic_market?: string;
+  preferred_language?: string;
+  budget_range?: string;
   marketing_objectives: string[];
   preferred_channels: string[];
   brand_voice: string;
@@ -289,6 +296,36 @@ export interface BrandProfile {
   prohibited_claims: string[];
   created_at?: string;
   updated_at?: string;
+}
+
+export interface UniversalOnboardingRequest {
+  business_name: string;
+  industry: string;
+  website_url?: string;
+  marketing_goal: string;
+  target_audience: string;
+  geographic_market: string;
+  preferred_language: string;
+  budget_range?: string;
+  brand_voice?: string;
+  flagship_product_name?: string;
+  flagship_product_description?: string;
+  flagship_product_price?: number;
+}
+
+export interface UniversalOnboardingResponse {
+  workspace_id: string;
+  brand: BrandProfile;
+  product?: ProductItem;
+  message: string;
+  suggested_next_step: string;
+}
+
+export interface OnboardingStatusResponse {
+  is_onboarded: boolean;
+  brand_count: number;
+  product_count: number;
+  primary_brand?: BrandProfile;
 }
 
 export interface ContentAssetItem {
@@ -311,6 +348,29 @@ export interface ContentAssetItem {
   version: number;
   created_at?: string;
   updated_at?: string;
+}
+
+export interface MediaAssetItem {
+  id: string;
+  workspace_id?: string;
+  brand_id?: string;
+  product_id?: string;
+  source_asset_id?: string;
+  content_asset_id?: string;
+  campaign_id?: string;
+  asset_type?: "product_upload" | "studio_generation" | "variation" | "content_image" | string;
+  style_preset?: string;
+  aspect_ratio?: string;
+  metadata_json?: string;
+  provider: string;
+  provider_model: string;
+  prompt: string;
+  media_url: string;
+  mime_type: string;
+  byte_size: number;
+  checksum_sha256: string;
+  status: "generated" | "demo_simulation" | "uploaded" | string;
+  created_at?: string;
 }
 
 export interface ContentScheduleItem {
@@ -377,8 +437,49 @@ export interface DashboardSummaryData {
   brand_id: string;
   brand_name: string;
   brand_industry: string;
+  brand_description?: string;
+  target_audience?: string;
+  geographic_market?: string;
+  preferred_language?: string;
+  budget_range?: string;
   active_campaigns_count: number;
   total_campaigns_count: number;
+  campaign_pipeline?: {
+    draft: number;
+    pending_review: number;
+    approved: number;
+    ready_to_publish: number;
+    rejected: number;
+    total_budget: number;
+    currency: string;
+  };
+  recent_campaigns?: Array<{
+    id: string;
+    name: string;
+    status: string;
+    channels: string[];
+    budget: number;
+    currency: string;
+    primary_kpi: string;
+    created_at?: string;
+  }>;
+  creative_studio_stats?: {
+    total_media_assets: number;
+    image_assets: number;
+    video_assets: number;
+    video_jobs_total: number;
+    video_jobs_completed: number;
+    video_jobs_processing: number;
+  };
+  recent_media?: Array<{
+    id: string;
+    asset_type: string;
+    prompt: string;
+    media_url: string;
+    aspect_ratio: string;
+    provider: string;
+    created_at?: string;
+  }>;
   content_counts: Record<string, number>;
   pending_approvals: Array<{
     id: string;
@@ -441,4 +542,328 @@ export interface LandingPageDraftData {
   seo_description: string;
   status: string;
 }
+
+export interface ProviderInfo {
+  id: string;
+  name: string;
+  is_configured: boolean;
+  models: string[];
+  supported_aspect_ratios: string[];
+  supports_image_to_image: boolean;
+  requires_credentials: string;
+  notes: string;
+}
+
+export interface StudioGenerateRequest {
+  brand_id: string;
+  product_id?: string;
+  source_asset_id?: string;
+  style_preset: string;
+  custom_prompt: string;
+  aspect_ratio: string;
+  provider?: string;
+  model?: string;
+  output_quality: "standard" | "hd";
+  confirmed: boolean;
+  allow_demo_fallback: boolean;
+}
+
+export interface StudioGenerateResponse {
+  media: MediaAssetItem;
+  source_media?: MediaAssetItem;
+  message: string;
+  is_demo: boolean;
+  warning?: string;
+}
+
+export interface MediaDeleteResponse {
+  success: boolean;
+  media_id: string;
+  message: string;
+}
+
+export interface VideoProviderInfo {
+  id: string;
+  name: string;
+  is_configured: boolean;
+  models: string[];
+  supported_aspect_ratios: string[];
+  supported_durations: number[];
+  supports_image_to_video: boolean;
+  supports_progress_reporting: boolean;
+  supports_cancellation: boolean;
+  requires_credentials: string;
+  official_pricing_note: string;
+  notes: string;
+}
+
+export interface VideoJobItem {
+  id: string;
+  workspace_id: string;
+  brand_id: string;
+  product_id?: string | null;
+  source_asset_id?: string | null;
+  output_media_id?: string | null;
+  output_media_url?: string | null;
+  provider: string;
+  provider_model: string;
+  provider_job_id?: string | null;
+  status: "queued" | "processing" | "completed" | "failed" | "cancelled" | string;
+  progress_percent?: number | null;
+  prompt: string;
+  script?: string | null;
+  template_id: string;
+  language: string;
+  aspect_ratio: string;
+  duration_seconds: number;
+  error_details?: string | null;
+  is_demo: boolean;
+  created_at?: string | null;
+  started_at?: string | null;
+  completed_at?: string | null;
+}
+
+export interface VideoJobCreateRequest {
+  brand_id: string;
+  product_id?: string;
+  source_asset_id?: string;
+  prompt: string;
+  script?: string;
+  template_id: string;
+  language: string;
+  aspect_ratio: string;
+  duration_seconds: number;
+  provider?: string;
+  model?: string;
+  confirmed: boolean;
+  allow_demo_fallback: boolean;
+}
+
+// ==========================================
+// Milestone 4: Campaign Planner & Orchestration Types
+// ==========================================
+
+export interface CampaignApprovalHistoryItem {
+  id: string;
+  campaign_id: string;
+  workspace_id?: string | null;
+  actor_id: string;
+  action: string;
+  from_status: string;
+  to_status: string;
+  comment?: string | null;
+  created_at: string;
+}
+
+export interface CampaignContentItem {
+  id: string;
+  workspace_id?: string | null;
+  brand_id: string;
+  product_id?: string | null;
+  campaign_id?: string | null;
+  channel: string;
+  asset_type: string;
+  title: string;
+  content: string;
+  headline?: string | null;
+  body?: string | null;
+  body_copy?: string | null;
+  call_to_action?: string | null;
+  hashtags?: string[];
+  image_prompt?: string | null;
+  generated_media_url?: string | null;
+  media_asset_id?: string | null;
+  status: string;
+  provider_source: string;
+  version: number;
+  angle?: string | null;
+  scheduled_time?: string | null;
+  created_at?: string | null;
+  updated_at?: string | null;
+}
+
+export interface CampaignCalendarEntryItem {
+  id: string;
+  schedule_id: string;
+  asset_id: string;
+  content_asset_id?: string | null;
+  campaign_id?: string | null;
+  campaign_name?: string | null;
+  brand_id: string;
+  brand_name?: string | null;
+  channel: string;
+  title: string;
+  headline?: string | null;
+  content_snippet: string;
+  scheduled_time: string;
+  status: string;
+  is_simulated: string;
+  media_url?: string | null;
+}
+
+export interface CampaignStrategyAudienceHypothesis {
+  segment: string;
+  pain_point: string;
+  hook: string;
+}
+
+export interface CampaignStrategyChannelRec {
+  channel: string;
+  allocated_budget: number;
+  recommended_format: string;
+  role_in_funnel: string;
+  rationale: string;
+}
+
+export interface CampaignStrategyContentPillar {
+  pillar: string;
+  theme: string;
+}
+
+export interface CampaignStrategyBudgetItem {
+  channel: string;
+  allocated_amount: number;
+}
+
+export interface CampaignStrategyContentPlanDay {
+  day: number;
+  channel: string;
+  asset_type: string;
+  title: string;
+  concept: string;
+}
+
+export interface CampaignStrategyPublishingWindow {
+  window: string;
+  best_days: string[];
+  focus: string;
+}
+
+export interface CampaignStrategyOutput {
+  summary: string;
+  campaign_summary?: string;
+  objective: string;
+  audience_hypotheses: CampaignStrategyAudienceHypothesis[];
+  channel_recommendations: CampaignStrategyChannelRec[];
+  content_pillars: CampaignStrategyContentPillar[];
+  asset_formats: string[];
+  draft_content_plan: CampaignStrategyContentPlanDay[];
+  publishing_calendar: CampaignStrategyPublishingWindow[];
+  kpi_targets: {
+    primary_kpi: string;
+    target_value: string;
+    budget_ceiling: number;
+    measurement_frequency: string;
+  };
+  budget_allocation: CampaignStrategyBudgetItem[];
+  budget_by_channel?: Record<string, number>;
+  risks_and_assumptions: string[];
+  provider_source: string;
+  is_demo: boolean;
+  generated_at: string;
+}
+
+export interface CampaignItem {
+  id: string;
+  workspace_id?: string | null;
+  brand_id?: string | null;
+  product_id?: string | null;
+  name: string;
+  description?: string | null;
+  platform?: string;
+  objective: string;
+  target_audience?: string | null;
+  customer_segment?: string | null;
+  geographic_target?: string | null;
+  channels: string[];
+  start_date?: string | null;
+  end_date?: string | null;
+  budget: number;
+  currency: string;
+  duration_days?: number;
+  content_frequency?: string | null;
+  preferred_publishing_windows?: string[];
+  primary_kpi?: string | null;
+  secondary_kpis?: string[];
+  brief?: string | null;
+  key_messages?: string[];
+  offer?: string | null;
+  cta?: string | null;
+  brand_constraints?: string | null;
+  status: "draft" | "planning" | "pending_review" | "approved" | "ready_to_publish" | "scheduled" | "published" | "rejected" | "revision_requested" | "cancelled" | "failed" | string;
+  rejection_reason?: string | null;
+  iteration_number: number;
+  strategy_recommendation?: CampaignStrategyOutput | null;
+  linked_assets?: Record<string, any>;
+  kpi_targets?: Record<string, any>;
+  created_at: string;
+  updated_at: string;
+  approval_history: CampaignApprovalHistoryItem[];
+  content_items: CampaignContentItem[];
+  content_count: number;
+  media_count: number;
+}
+
+export interface CampaignCreatePayload {
+  name: string;
+  description?: string;
+  brand_id: string;
+  product_id?: string;
+  objective: string;
+  customer_segment?: string;
+  geographic_target?: string;
+  channels?: string[];
+  start_date?: string;
+  end_date?: string;
+  budget: number;
+  currency?: string;
+  content_frequency?: string;
+  preferred_publishing_windows?: string[];
+  primary_kpi?: string;
+  secondary_kpis?: string[];
+  brief?: string;
+  key_messages?: string[];
+  offer?: string;
+  cta?: string;
+  brand_constraints?: string;
+}
+
+export interface CampaignUpdatePayload {
+  name?: string;
+  description?: string;
+  product_id?: string;
+  objective?: string;
+  customer_segment?: string;
+  geographic_target?: string;
+  channels?: string[];
+  start_date?: string;
+  end_date?: string;
+  budget?: number;
+  currency?: string;
+  content_frequency?: string;
+  preferred_publishing_windows?: string[];
+  primary_kpi?: string;
+  secondary_kpis?: string[];
+  brief?: string;
+  key_messages?: string[];
+  offer?: string;
+  cta?: string;
+  brand_constraints?: string;
+}
+
+export interface CampaignContentCreatePayload {
+  channel: string;
+  asset_type?: string;
+  title?: string;
+  content?: string;
+  headline?: string;
+  body?: string;
+  body_copy?: string;
+  call_to_action?: string;
+  hashtags?: string[];
+  image_prompt?: string;
+  media_asset_id?: string;
+  scheduled_time?: string;
+}
+
 

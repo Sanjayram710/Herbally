@@ -8,9 +8,10 @@ class ContentAsset(Base):
     __tablename__ = "content_assets"
 
     id = Column(String, primary_key=True, index=True)
+    workspace_id = Column(String, nullable=True, index=True)
     brand_id = Column(String, nullable=False, default="herbally-brand")
     product_id = Column(String, nullable=True)
-    campaign_id = Column(String, nullable=True)
+    campaign_id = Column(String, nullable=True, index=True)
     channel = Column(String, nullable=False, default="Instagram")
     asset_type = Column(String, nullable=False, default="social_post")  # social_post, ad_copy, reel_script, headline, product_desc, creative_brief
     title = Column(String, nullable=False)

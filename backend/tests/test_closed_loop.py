@@ -5,7 +5,7 @@ from app.main import app
 from app.services.orchestrator import MarketingOrchestrator
 from app.schemas.product import WorkflowTriggerRequest
 
-client = TestClient(app)
+client = TestClient(app, headers={"Authorization": "Bearer herbally-local-dev-token"})
 
 
 def test_closed_loop_workflow_and_simulation():

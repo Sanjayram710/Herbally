@@ -1,0 +1,1030 @@
+[
+  {
+    "id": "TC001",
+    "title": "Create a workspace and enter the correct brand context",
+    "description": "This verifies that a user can create a brand workspace, see it in the scoped brand list, and open it to work in the correct workspace context.",
+    "category": "workspace selection and isolation",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to the workspace selection page"
+      },
+      {
+        "type": "action",
+        "description": "Create a new brand workspace"
+      },
+      {
+        "type": "action",
+        "description": "Open the newly created workspace from the brand list"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the active workspace context is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the scoped brand list reflects the selected workspace only"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC002",
+    "title": "Use brand intelligence to generate a budget-safe campaign strategy",
+    "description": "This verifies that a user can open brand intelligence, feed it into campaign planning, and receive a strategy that respects budget guardrails.",
+    "category": "campaign planning with deterministic fallback and budget ceiling enforcement",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to the brand intelligence page"
+      },
+      {
+        "type": "action",
+        "description": "Open intelligence for the active brand"
+      },
+      {
+        "type": "action",
+        "description": "Start campaign planning from the intelligence signals"
+      },
+      {
+        "type": "action",
+        "description": "Fill in valid campaign inputs within budget limits"
+      },
+      {
+        "type": "action",
+        "description": "Submit the planning request"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify a strategy output is displayed"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the planned budget stays within the allowed ceiling"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC003",
+    "title": "Create a brand workspace and load its scoped brands",
+    "description": "This verifies that a user can create a new workspace, enter the active workspace context, and see only brands scoped to that workspace.",
+    "category": "Universal Multi-Brand Workspace",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the workspace admin credentials with {{LOGIN_USER}}"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the workspace password with {{LOGIN_PASSWORD}}"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Open the workspace onboarding flow"
+      },
+      {
+        "type": "action",
+        "description": "Create a new brand workspace with valid brand details"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the active workspace context is loaded"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the brand list is scoped to the new workspace"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC004",
+    "title": "Create a campaign and move it to pending review",
+    "description": "This verifies that a user can create a campaign from a planned strategy and place it into the pending review approval state.",
+    "category": "approval state transitions before publishing",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to the campaign creation page"
+      },
+      {
+        "type": "action",
+        "description": "Create a campaign from an existing strategy"
+      },
+      {
+        "type": "action",
+        "description": "Submit the campaign for review"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the campaign appears in pending review state"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC005",
+    "title": "Switch to an existing workspace and keep brand data isolated",
+    "description": "This verifies that a user can switch into another valid workspace and see that workspace's isolated brand list instead of cross-workspace data.",
+    "category": "Universal Multi-Brand Workspace",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the workspace admin credentials with {{LOGIN_USER}}"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the workspace password with {{LOGIN_PASSWORD}}"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Open the workspace switcher"
+      },
+      {
+        "type": "action",
+        "description": "Switch to a different available workspace"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the active workspace context changes"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the brand list updates to the selected workspace"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC006",
+    "title": "Keep brand access scoped to the selected workspace",
+    "description": "This verifies that a user can switch workspaces and only see brands that belong to the active workspace.",
+    "category": "workspace selection and isolation",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to the workspace selection page"
+      },
+      {
+        "type": "action",
+        "description": "Create two brand workspaces"
+      },
+      {
+        "type": "action",
+        "description": "Open the first workspace from the brand list"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify only the brands for the active workspace are visible"
+      },
+      {
+        "type": "action",
+        "description": "Switch to the second workspace from the brand list"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the visible brand list changes to the second workspace scope"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC007",
+    "title": "Plan a campaign with brand intelligence and create a draft",
+    "description": "This verifies that a user can use brand intelligence to synthesize a strategy within budget guardrails and create a draft campaign from the approved plan.",
+    "category": "AlmostZero-Inspired Campaign Automation",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the campaign planner credentials with {{LOGIN_USER}}"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the campaign planner password with {{LOGIN_PASSWORD}}"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Open the campaign planning flow"
+      },
+      {
+        "type": "action",
+        "description": "Use brand intelligence to populate planning inputs"
+      },
+      {
+        "type": "action",
+        "description": "Set a valid objective and channel allocation"
+      },
+      {
+        "type": "action",
+        "description": "Set a valid date range"
+      },
+      {
+        "type": "action",
+        "description": "Set a valid budget ceiling"
+      },
+      {
+        "type": "action",
+        "description": "Synthesize the campaign strategy"
+      },
+      {
+        "type": "action",
+        "description": "Create the campaign draft from the approved plan"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify a draft campaign is created"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the strategy output is displayed"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC008",
+    "title": "Generate a product asset in the creative studio",
+    "description": "This verifies that a user can create a product image or video asset in the creative studio and see the generated result.",
+    "category": "AI creative generation entry points",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to the creative studio"
+      },
+      {
+        "type": "action",
+        "description": "Start a new product asset generation"
+      },
+      {
+        "type": "action",
+        "description": "Fill in a valid creative prompt"
+      },
+      {
+        "type": "action",
+        "description": "Submit the generation request"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify a generated creative asset is displayed"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC009",
+    "title": "Move a draft campaign into pending review",
+    "description": "This verifies that a created campaign can transition into the pending review approval state before publishing.",
+    "category": "AlmostZero-Inspired Campaign Automation",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the campaign planner credentials with {{LOGIN_USER}}"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the campaign planner password with {{LOGIN_PASSWORD}}"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Open an existing draft campaign created in the current session"
+      },
+      {
+        "type": "action",
+        "description": "Change the approval state to pending review"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the campaign approval state is pending review"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC010",
+    "title": "Approve a campaign and schedule it in the publishing calendar",
+    "description": "This verifies that a reviewer can approve a campaign and then schedule it in the publishing calendar.",
+    "category": "publishing calendar scheduling and edits",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to the approvals page"
+      },
+      {
+        "type": "action",
+        "description": "Approve a campaign that is waiting for review"
+      },
+      {
+        "type": "action",
+        "description": "Navigate to the publishing calendar"
+      },
+      {
+        "type": "action",
+        "description": "Schedule the approved campaign for publishing"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the scheduled publishing entry is visible in the calendar"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC011",
+    "title": "Enforce the campaign budget ceiling during planning",
+    "description": "This verifies that campaign planning rejects an unsafe budget cap and surfaces a budget protection error instead of allowing the plan to continue.",
+    "category": "AlmostZero-Inspired Campaign Automation",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the campaign planner credentials with {{LOGIN_USER}}"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the campaign planner password with {{LOGIN_PASSWORD}}"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Open the campaign planning flow"
+      },
+      {
+        "type": "action",
+        "description": "Set a valid objective and channel allocation"
+      },
+      {
+        "type": "action",
+        "description": "Set a budget ceiling below the allowed minimum"
+      },
+      {
+        "type": "action",
+        "description": "Synthesize the campaign strategy"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify a budget protection error is displayed"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the campaign draft is not created"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC012",
+    "title": "Detect restricted health claims in ad copy",
+    "description": "This verifies that the compliance flow flags restricted health or medical claims in ad copy and reports a violation.",
+    "category": "regulatory guardrails",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to the claims check page"
+      },
+      {
+        "type": "action",
+        "description": "Enter ad copy containing a restricted health claim"
+      },
+      {
+        "type": "action",
+        "description": "Submit the compliance check"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify a compliance violation is reported"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the restricted claim is flagged"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC013",
+    "title": "Generate a product image and save it to the media library",
+    "description": "This verifies that a user can create AI product imagery in the studio and store the generated asset in the shared media library.",
+    "category": "Scalio-Inspired Creative Studio Suite",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the creative producer credentials with {{LOGIN_USER}}"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the creative producer password with {{LOGIN_PASSWORD}}"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Open the product image generation flow"
+      },
+      {
+        "type": "action",
+        "description": "Fill in valid product keyframe details"
+      },
+      {
+        "type": "action",
+        "description": "Set valid lighting preferences"
+      },
+      {
+        "type": "action",
+        "description": "Generate the product image"
+      },
+      {
+        "type": "action",
+        "description": "Save the generated image to the media library"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the saved asset appears in the media library"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC014",
+    "title": "Run a restricted health claim through compliance review",
+    "description": "This verifies that compliance review detects restricted health claims in ad copy and blocks unsafe content from passing review.",
+    "category": "Campaign Compliance and Publishing Guardrails",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the compliance reviewer credentials with {{LOGIN_USER}}"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the compliance reviewer password with {{LOGIN_PASSWORD}}"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Open the compliance review flow"
+      },
+      {
+        "type": "action",
+        "description": "Enter ad copy containing a restricted health claim"
+      },
+      {
+        "type": "action",
+        "description": "Run the compliance check"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify a restricted claim warning is displayed"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the ad copy does not pass compliance review"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC015",
+    "title": "Plan a zero-spend sandbox campaign with deterministic output",
+    "description": "This verifies that a user can enable sandbox mode, create a campaign plan with no spend allocation, and receive deterministic strategy output.",
+    "category": "regulatory guardrails",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to the campaign planning page"
+      },
+      {
+        "type": "action",
+        "description": "Enable zero-spend sandbox mode"
+      },
+      {
+        "type": "action",
+        "description": "Fill in valid campaign inputs"
+      },
+      {
+        "type": "action",
+        "description": "Submit the planning request"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the strategy output is deterministic"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify no spend allocation is assigned"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC016",
+    "title": "Show an empty state when no workspace is selected",
+    "description": "This verifies that accessing workspace-scoped brand data without an active workspace shows a clear empty or blocked state instead of unrelated data.",
+    "category": "Universal Multi-Brand Workspace",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the workspace admin credentials with {{LOGIN_USER}}"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the workspace password with {{LOGIN_PASSWORD}}"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Open the workspace area without selecting a workspace"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify a no-workspace-selected state is displayed"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify workspace-scoped brand data is not shown"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC017",
+    "title": "Review campaign analytics and next-best-action recommendations",
+    "description": "This verifies that a user can open campaign analytics and see performance metrics together with next-best-action guidance.",
+    "category": "campaign analytics and next-best-action views",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to the campaign analytics page"
+      },
+      {
+        "type": "action",
+        "description": "Open analytics for a published campaign"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify campaign performance metrics are displayed"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify next-best-action recommendations are displayed"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC018",
+    "title": "Generate a video preview and store the completed variation",
+    "description": "This verifies that a user can generate a video asset, review render progress, and save the finished output into the media library.",
+    "category": "Scalio-Inspired Creative Studio Suite",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the creative producer credentials with {{LOGIN_USER}}"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the creative producer password with {{LOGIN_PASSWORD}}"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Open the video generation flow"
+      },
+      {
+        "type": "action",
+        "description": "Fill in a valid vertical video prompt"
+      },
+      {
+        "type": "action",
+        "description": "Set valid motion settings"
+      },
+      {
+        "type": "action",
+        "description": "Attach valid asset references"
+      },
+      {
+        "type": "action",
+        "description": "Generate the video preview"
+      },
+      {
+        "type": "action",
+        "description": "Save the completed video variation to the media library"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the video asset appears in the media library"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC019",
+    "title": "Save a generated asset to the media library",
+    "description": "This verifies that a user can store a generated creative asset in the media library and retrieve it later from the library.",
+    "category": "media asset library save/retrieve flows",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to the creative studio"
+      },
+      {
+        "type": "action",
+        "description": "Generate a new creative asset"
+      },
+      {
+        "type": "action",
+        "description": "Save the generated asset to the media library"
+      },
+      {
+        "type": "action",
+        "description": "Navigate to the media library"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the saved asset appears in the media library"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC020",
+    "title": "Schedule an approved campaign and review its analytics recommendations",
+    "description": "This verifies that an approved campaign can be scheduled in the publishing calendar and that analytics and next-best-action recommendations are available afterward.",
+    "category": "Publishing Calendar and Analytics Insights",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the publisher and operations credentials with {{LOGIN_USER}}"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the publisher and operations password with {{LOGIN_PASSWORD}}"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Open the publishing calendar"
+      },
+      {
+        "type": "action",
+        "description": "Schedule an approved campaign on a valid date and time"
+      },
+      {
+        "type": "action",
+        "description": "Open the analytics view for the scheduled campaign"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the campaign appears in the publishing calendar"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify analytics recommendations are displayed"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC021",
+    "title": "Attach a saved asset to a creative brief",
+    "description": "This verifies that a user can create a creative brief linked to a campaign and attach an asset from the media library.",
+    "category": "creative brief creation linked to campaigns",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to the campaign brief creation page"
+      },
+      {
+        "type": "action",
+        "description": "Create a new campaign brief"
+      },
+      {
+        "type": "action",
+        "description": "Attach a media library asset to the brief"
+      },
+      {
+        "type": "action",
+        "description": "Save the brief"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the brief is linked to the campaign and includes the attached asset"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC022",
+    "title": "Validate compliant ad copy and positive budget constraints",
+    "description": "This verifies that compliant ad copy passes review and that a non-positive campaign budget is rejected.",
+    "category": "regulatory & budget guardrails",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to the claims check page"
+      },
+      {
+        "type": "action",
+        "description": "Enter compliant ad copy"
+      },
+      {
+        "type": "action",
+        "description": "Submit the compliance check"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify no compliance violations are reported"
+      },
+      {
+        "type": "action",
+        "description": "Navigate to the campaign planning page"
+      },
+      {
+        "type": "action",
+        "description": "Fill in a non-positive budget value"
+      },
+      {
+        "type": "action",
+        "description": "Submit the planning request"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify a budget validation error is displayed"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC023",
+    "title": "Show deterministic results for a zero-spend sandbox campaign",
+    "description": "This verifies that a zero-spend sandbox campaign produces deterministic fallback output and can be run without violating budget guardrails.",
+    "category": "Campaign Compliance and Publishing Guardrails",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the campaign planner credentials with {{LOGIN_USER}}"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the campaign planner password with {{LOGIN_PASSWORD}}"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Open the campaign planning flow"
+      },
+      {
+        "type": "action",
+        "description": "Set the campaign to sandbox mode"
+      },
+      {
+        "type": "action",
+        "description": "Set the budget ceiling to zero spend"
+      },
+      {
+        "type": "action",
+        "description": "Synthesize the campaign strategy"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify deterministic fallback output is displayed"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the zero-spend sandbox campaign can be created"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC024",
+    "title": "Show deterministic analytics when no live activity exists",
+    "description": "This verifies that campaign analytics still returns a usable empty or mock result when there is no published or tracked activity.",
+    "category": "deterministic mock analytics when no live activity exists",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to the campaign analytics page"
+      },
+      {
+        "type": "action",
+        "description": "Open analytics for a campaign with no live activity"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify deterministic mock analytics or empty metrics are displayed"
+      }
+    ],
+    "priority": "Medium"
+  },
+  {
+    "id": "TC025",
+    "title": "Prevent invalid publishing reschedule changes",
+    "description": "This verifies that the publishing calendar rejects an invalid timezone or date conflict when rescheduling an entry.",
+    "category": "publishing calendar scheduling and edits",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to the publishing calendar"
+      },
+      {
+        "type": "action",
+        "description": "Open an existing scheduled entry"
+      },
+      {
+        "type": "action",
+        "description": "Change the scheduled time to an invalid conflicting value"
+      },
+      {
+        "type": "action",
+        "description": "Save the reschedule changes"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify a rescheduling validation error is displayed"
+      }
+    ],
+    "priority": "Medium"
+  },
+  {
+    "id": "TC026",
+    "title": "Handle an unsupported publishing channel filter",
+    "description": "This verifies that the publishing calendar rejects an invalid channel filter with a validation error.",
+    "category": "publishing calendar scheduling and edits",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to the publishing calendar"
+      },
+      {
+        "type": "action",
+        "description": "Apply an invalid channel filter"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify a channel validation error is displayed"
+      }
+    ],
+    "priority": "Medium"
+  },
+  {
+    "id": "TC027",
+    "title": "Block an invalid approval transition for a campaign",
+    "description": "This verifies that the approval workflow rejects an unsupported state transition and keeps the campaign from moving into an approved state directly.",
+    "category": "AlmostZero-Inspired Campaign Automation",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the campaign planner credentials with {{LOGIN_USER}}"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the campaign planner password with {{LOGIN_PASSWORD}}"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Open an existing draft campaign created in the current session"
+      },
+      {
+        "type": "action",
+        "description": "Attempt to change the approval state directly to approved"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify an approval state transition error is displayed"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the campaign remains unapproved"
+      }
+    ],
+    "priority": "Medium"
+  },
+  {
+    "id": "TC028",
+    "title": "Reject malformed creative inputs in the studio",
+    "description": "This verifies that the studio blocks malformed product inputs and unsupported video generation settings with visible validation feedback.",
+    "category": "Scalio-Inspired Creative Studio Suite",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the creative producer credentials with {{LOGIN_USER}}"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the creative producer password with {{LOGIN_PASSWORD}}"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Open the product image generation flow"
+      },
+      {
+        "type": "action",
+        "description": "Leave required product inputs incomplete"
+      },
+      {
+        "type": "action",
+        "description": "Generate the product image"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify a creative input validation error is displayed"
+      }
+    ],
+    "priority": "Low"
+  }
+]

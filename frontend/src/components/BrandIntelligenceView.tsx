@@ -12,9 +12,17 @@ import {
 import { fetchBrands, updateBrand, ingestBrandWebsite } from "../services/api";
 import type { BrandProfile } from "../types";
 
-export const BrandIntelligenceView: React.FC = () => {
-  const [brand, setBrand] = useState<BrandProfile | null>(null);
-  const [websiteUrl, setWebsiteUrl] = useState<string>("");
+interface BrandIntelligenceViewProps {
+  activeBrand?: BrandProfile | null;
+  onBrandUpdated?: (brand: BrandProfile) => void;
+}
+
+export const BrandIntelligenceView: React.FC<BrandIntelligenceViewProps> = ({
+  activeBrand,
+  onBrandUpdated,
+}) => {
+  const [brand, setBrand] = useState<BrandProfile | null>(activeBrand || null);
+  const [websiteUrl, setWebsiteUrl] = useState<string>(activeBrand?.website_url || "");
   const [isScraping, setIsScraping] = useState<boolean>(false);
   const [scrapeResult, setScrapeResult] = useState<any>(null);
   const [scrapeError, setScrapeError] = useState<string | null>(null);
@@ -22,15 +30,20 @@ export const BrandIntelligenceView: React.FC = () => {
   const [saveSuccess, setSaveSuccess] = useState<boolean>(false);
 
   useEffect(() => {
+    if (activeBrand) {
+      setBrand(activeBrand);
+      setWebsiteUrl(activeBrand.website_url || "");
+      return;
+    }
     fetchBrands()
       .then((brands) => {
         if (brands && brands.length > 0) {
           setBrand(brands[0]);
-          setWebsiteUrl(brands[0].website_url || "https://herbally.in");
+          setWebsiteUrl(brands[0].website_url || "");
         }
       })
       .catch((err) => console.error("Error loading brand:", err));
-  }, []);
+  }, [activeBrand]);
 
   const handleSave = async () => {
     if (!brand) return;
@@ -51,6 +64,7 @@ export const BrandIntelligenceView: React.FC = () => {
         preferred_channels: brand.preferred_channels,
       });
       setBrand(updated);
+      if (onBrandUpdated) onBrandUpdated(updated);
       setSaveSuccess(true);
       setTimeout(() => setSaveSuccess(false), 3000);
     } catch (err: any) {
@@ -132,7 +146,7 @@ export const BrandIntelligenceView: React.FC = () => {
             type="url"
             value={websiteUrl}
             onChange={(e) => setWebsiteUrl(e.target.value)}
-            placeholder="https://herbally.in"
+            placeholder="https://yourbrand.com"
             style={{
               flex: 1,
               minWidth: "260px",

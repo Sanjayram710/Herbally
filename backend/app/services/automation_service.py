@@ -4,16 +4,21 @@ from typing import List, Optional
 from sqlalchemy.orm import Session
 from app.models.automation import AutomationRule, AutomationExecution
 from app.models.content import ContentAsset
-from app.models.campaign import Campaign
 from app.models.brand import BrandProfile
 from app.models.product import Product
 from app.schemas.content import ContentGenerateRequest
+from app.schemas.automation import AutomationRuleCreate, AutomationRuleUpdate
 from app.services.content_service import ContentService
+from app.config import settings
 
 
 class AutomationService:
     @staticmethod
-    def seed_default_rules(db: Session):
+    def _rule_id(workspace_id: str, rule_key: str) -> str:
+        return f"{workspace_id}--{rule_key}"
+
+    @staticmethod
+    def seed_default_rules(db: Session, workspace_id: str):
         rules = [
             {
                 "id": "rule-weekly-content",
@@ -53,10 +58,17 @@ class AutomationService:
             }
         ]
         for r in rules:
-            existing = db.query(AutomationRule).filter(AutomationRule.id == r["id"]).first()
+            rule_id = AutomationService._rule_id(workspace_id, r["id"])
+            existing = db.query(AutomationRule).filter(AutomationRule.id == rule_id).first()
+            if not existing and workspace_id == settings.LEGACY_WORKSPACE_ID:
+                legacy_rule = db.query(AutomationRule).filter(AutomationRule.id == r["id"]).first()
+                if legacy_rule and legacy_rule.workspace_id in (None, workspace_id):
+                    existing = legacy_rule
+                    existing.workspace_id = workspace_id
             if not existing:
                 new_rule = AutomationRule(
-                    id=r["id"],
+                    id=rule_id,
+                    workspace_id=workspace_id,
                     name=r["name"],
                     description=r["description"],
                     trigger_type=r["trigger_type"],
@@ -68,13 +80,47 @@ class AutomationService:
         db.commit()
 
     @staticmethod
-    def list_rules(db: Session) -> List[AutomationRule]:
-        AutomationService.seed_default_rules(db)
-        return db.query(AutomationRule).all()
+    def list_rules(db: Session, workspace_id: str) -> List[AutomationRule]:
+        AutomationService.seed_default_rules(db, workspace_id)
+        return db.query(AutomationRule).filter(AutomationRule.workspace_id == workspace_id).all()
 
     @staticmethod
-    def toggle_rule(db: Session, rule_id: str, is_enabled: bool) -> Optional[AutomationRule]:
-        rule = db.query(AutomationRule).filter(AutomationRule.id == rule_id).first()
+    def create_rule(db: Session, workspace_id: str, payload: AutomationRuleCreate) -> AutomationRule:
+        rule = AutomationRule(
+            id=f"rule-{uuid.uuid4().hex[:12]}",
+            workspace_id=workspace_id,
+            **payload.model_dump(),
+        )
+        db.add(rule)
+        db.commit()
+        db.refresh(rule)
+        return rule
+
+    @staticmethod
+    def update_rule(
+        db: Session, workspace_id: str, rule_id: str, payload: AutomationRuleUpdate
+    ) -> Optional[AutomationRule]:
+        rule = (
+            db.query(AutomationRule)
+            .filter(AutomationRule.id == rule_id, AutomationRule.workspace_id == workspace_id)
+            .first()
+        )
+        if not rule:
+            return None
+        for field, value in payload.model_dump(exclude_unset=True).items():
+            setattr(rule, field, value)
+        rule.updated_at = datetime.datetime.utcnow()
+        db.commit()
+        db.refresh(rule)
+        return rule
+
+    @staticmethod
+    def toggle_rule(db: Session, workspace_id: str, rule_id: str, is_enabled: bool) -> Optional[AutomationRule]:
+        rule = (
+            db.query(AutomationRule)
+            .filter(AutomationRule.id == rule_id, AutomationRule.workspace_id == workspace_id)
+            .first()
+        )
         if not rule:
             return None
         rule.is_enabled = is_enabled
@@ -84,8 +130,12 @@ class AutomationService:
         return rule
 
     @staticmethod
-    def run_rule(db: Session, rule_id: str) -> AutomationExecution:
-        rule = db.query(AutomationRule).filter(AutomationRule.id == rule_id).first()
+    def run_rule(db: Session, workspace_id: str, rule_id: str) -> AutomationExecution:
+        rule = (
+            db.query(AutomationRule)
+            .filter(AutomationRule.id == rule_id, AutomationRule.workspace_id == workspace_id)
+            .first()
+        )
         if not rule:
             raise ValueError("Rule not found")
 
@@ -95,9 +145,12 @@ class AutomationService:
 
         try:
             if rule.action_type == "draft_content":
+                brand = db.query(BrandProfile).filter(BrandProfile.workspace_id == workspace_id).first()
+                if not brand:
+                    raise ValueError("Workspace needs a brand before automation can generate content")
                 prod = db.query(Product).first()
                 req = ContentGenerateRequest(
-                    brand_id="herbally-brand",
+                    brand_id=brand.id,
                     product_id=prod.id if prod else None,
                     channels=["Instagram", "Meta Ads"],
                     asset_types=["social_post", "ad_copy"]
@@ -106,9 +159,13 @@ class AutomationService:
                 details = f"Generated {len(assets)} fresh draft content assets (IDs: {', '.join([a.id for a in assets])}). Placed in DRAFT status awaiting human review."
 
             elif rule.action_type == "notify_approval":
-                pending_camps = db.query(Campaign).filter(Campaign.status == "PENDING_APPROVAL").count()
-                pending_assets = db.query(ContentAsset).filter(ContentAsset.status == "pending_approval").count()
-                details = f"Approval queue audit complete. Currently {pending_camps} campaign(s) and {pending_assets} content asset(s) awaiting approval."
+                pending_assets = (
+                    db.query(ContentAsset)
+                    .join(BrandProfile, BrandProfile.id == ContentAsset.brand_id)
+                    .filter(BrandProfile.workspace_id == workspace_id, ContentAsset.status == "pending_approval")
+                    .count()
+                )
+                details = f"Workspace approval queue audit complete. Currently {pending_assets} content asset(s) awaiting approval."
 
             elif rule.action_type == "check_budget_drag":
                 details = "Budget drag check executed. Heuristic evaluation confirms active campaigns within safe parameters. No emergency pause required."
@@ -128,6 +185,7 @@ class AutomationService:
 
         execution = AutomationExecution(
             id=f"exec-{uuid.uuid4().hex[:8]}",
+            workspace_id=workspace_id,
             rule_id=rule.id,
             rule_name=rule.name,
             status=status,
@@ -141,5 +199,11 @@ class AutomationService:
         return execution
 
     @staticmethod
-    def list_executions(db: Session, limit: int = 50) -> List[AutomationExecution]:
-        return db.query(AutomationExecution).order_by(AutomationExecution.executed_at.desc()).limit(limit).all()
+    def list_executions(db: Session, workspace_id: str, limit: int = 50) -> List[AutomationExecution]:
+        return (
+            db.query(AutomationExecution)
+            .filter(AutomationExecution.workspace_id == workspace_id)
+            .order_by(AutomationExecution.executed_at.desc())
+            .limit(limit)
+            .all()
+        )

@@ -4,7 +4,7 @@ from app.main import app
 from app.services.analytics_service import AnalyticsService, safe_divide
 from app.services.optimization_service import OptimizationService
 
-client = TestClient(app)
+client = TestClient(app, headers={"Authorization": "Bearer herbally-local-dev-token"})
 
 
 def test_python_metric_calculations_and_zero_division():

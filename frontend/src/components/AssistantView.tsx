@@ -10,14 +10,22 @@ import {
 import { sendAssistantMessage, fetchAssistantHistory } from "../services/api";
 import type { AssistantMessageItem } from "../types";
 
-export const AssistantView: React.FC = () => {
+interface AssistantViewProps {
+  brandId?: string;
+  brandName?: string;
+}
+
+export const AssistantView: React.FC<AssistantViewProps> = ({
+  brandId,
+  brandName = "Brand",
+}) => {
   const [messages, setMessages] = useState<AssistantMessageItem[]>([]);
   const [input, setInput] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const loadHistory = () => {
-    fetchAssistantHistory("herbally-brand")
+    fetchAssistantHistory(brandId)
       .then((history) => {
         if (history && history.length > 0) {
           setMessages(history);
@@ -26,10 +34,9 @@ export const AssistantView: React.FC = () => {
           setMessages([
             {
               id: "msg-init",
-              brand_id: "herbally-brand",
+              brand_id: brandId || "default-brand",
               role: "assistant",
-              content:
-                "Hello! I am your **Herbally AI Marketing Strategist Assistant**.\n\nI am grounded in verified Herbally brand specifications, sleep wellness positioning, and strict medical claim guardrails.\n\nHow can I assist your marketing workflow today?",
+              content: `Hello! I am your **${brandName} AI Marketing Strategist Assistant**.\n\nI am grounded in verified specifications, positioning, and safety guardrails.\n\nHow can I assist your marketing workflow today?`,
               created_at: new Date().toISOString()
             }
           ]);
@@ -40,7 +47,7 @@ export const AssistantView: React.FC = () => {
 
   useEffect(() => {
     loadHistory();
-  }, []);
+  }, [brandId]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -52,7 +59,7 @@ export const AssistantView: React.FC = () => {
 
     const userMsg: AssistantMessageItem = {
       id: `temp-${Date.now()}`,
-      brand_id: "herbally-brand",
+      brand_id: brandId || "default-brand",
       role: "user",
       content: text,
       created_at: new Date().toISOString()
@@ -63,7 +70,7 @@ export const AssistantView: React.FC = () => {
     setIsLoading(true);
 
     try {
-      const res = await sendAssistantMessage("herbally-brand", text);
+      const res = await sendAssistantMessage(brandId || "default-brand", text);
       if (res && res.assistant_message) {
         setMessages((prev) => [...prev, res.assistant_message]);
       }
@@ -94,7 +101,7 @@ export const AssistantView: React.FC = () => {
               AI Marketing Strategist Assistant
             </h3>
             <p style={{ fontSize: "0.78rem", color: "var(--text-muted)" }}>
-              Active Brand: Herbally • Actionable Tool Calling • Strict Guardrail Compliance
+              Active Brand: {brandName} • Actionable Tool Calling • Strict Guardrail Compliance
             </p>
           </div>
         </div>
@@ -211,7 +218,7 @@ export const AssistantView: React.FC = () => {
           onKeyDown={(e) => {
             if (e.key === "Enter") handleSend();
           }}
-          placeholder="Ask anything about Herbally marketing, analytics, or generate ad copy..."
+          placeholder={`Ask anything about ${brandName} marketing, analytics, or generate ad copy...`}
           disabled={isLoading}
           style={{
             flex: 1,

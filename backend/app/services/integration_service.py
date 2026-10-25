@@ -7,8 +7,23 @@ from app.config import settings
 
 class IntegrationService:
     @staticmethod
-    def seed_default_integrations(db: Session):
+    def _integration_id(workspace_id: str, connector_key: str) -> str:
+        return f"{workspace_id}--{connector_key}"
+
+    @staticmethod
+    def seed_default_integrations(db: Session, workspace_id: str):
         connectors = [
+            {
+                "id": "openai_images",
+                "name": "OpenAI Images",
+                "category": "ai",
+                "status": "configured_not_verified" if settings.IMAGE_PROVIDER.lower() == "openai" and settings.OPENAI_IMAGE_API_KEY else "unconfigured",
+                "is_configured": bool(settings.IMAGE_PROVIDER.lower() == "openai" and settings.OPENAI_IMAGE_API_KEY),
+                "credentials_mask": "••••••••" if settings.OPENAI_IMAGE_API_KEY else "",
+                "permissions": ["image_generation"],
+                "supported_actions": ["Generate Image From Approved Content Prompt", "Persist Generated Media"],
+                "setup_instructions": "Set IMAGE_PROVIDER=openai and OPENAI_IMAGE_API_KEY in the backend environment. Generation requires explicit confirmation and may incur provider charges."
+            },
             {
                 "id": "meta_ads",
                 "name": "Meta Ads Manager (Facebook & Instagram)",
@@ -78,10 +93,29 @@ class IntegrationService:
         ]
 
         for c in connectors:
-            existing = db.query(IntegrationConfig).filter(IntegrationConfig.id == c["id"]).first()
+            connector_key = c["id"]
+            existing = (
+                db.query(IntegrationConfig)
+                .filter(
+                    IntegrationConfig.workspace_id == workspace_id,
+                    IntegrationConfig.connector_key == connector_key,
+                )
+                .first()
+            )
+            # A pre-workspace deployment used the provider key as the primary
+            # key. Adopt that legacy record in the explicitly configured
+            # legacy workspace instead of creating a duplicate configuration.
+            if not existing and workspace_id == settings.LEGACY_WORKSPACE_ID:
+                legacy_record = db.query(IntegrationConfig).filter(IntegrationConfig.id == connector_key).first()
+                if legacy_record and legacy_record.workspace_id in (None, workspace_id):
+                    existing = legacy_record
+                    existing.workspace_id = workspace_id
+                    existing.connector_key = connector_key
             if not existing:
                 new_conn = IntegrationConfig(
-                    id=c["id"],
+                    id=IntegrationService._integration_id(workspace_id, connector_key),
+                    workspace_id=workspace_id,
+                    connector_key=connector_key,
                     name=c["name"],
                     category=c["category"],
                     status=c["status"],
@@ -90,23 +124,43 @@ class IntegrationService:
                     permissions=c["permissions"],
                     supported_actions=c["supported_actions"],
                     setup_instructions=c["setup_instructions"],
-                    last_sync_at=datetime.datetime.utcnow() if c["is_configured"] else None
+                    # A configured image key is not a verified provider connection.
+                    last_sync_at=(
+                        datetime.datetime.utcnow()
+                        if c["is_configured"] and c["id"] != "openai_images"
+                        else None
+                    )
                 )
                 db.add(new_conn)
+            elif connector_key == "openai_images":
+                # This connector's configuration reflects environment variables. Refresh it
+                # on every startup/list request so an old persisted "unconfigured" state
+                # cannot misrepresent newly supplied credentials (or vice versa).
+                existing.status = c["status"]
+                existing.is_configured = c["is_configured"]
+                existing.credentials_mask = c["credentials_mask"]
+                existing.permissions = c["permissions"]
+                existing.supported_actions = c["supported_actions"]
+                existing.setup_instructions = c["setup_instructions"]
+                existing.last_sync_at = None
         db.commit()
 
     @staticmethod
-    def list_integrations(db: Session) -> List[IntegrationConfig]:
-        IntegrationService.seed_default_integrations(db)
-        return db.query(IntegrationConfig).all()
+    def list_integrations(db: Session, workspace_id: str) -> List[IntegrationConfig]:
+        IntegrationService.seed_default_integrations(db, workspace_id)
+        return db.query(IntegrationConfig).filter(IntegrationConfig.workspace_id == workspace_id).all()
 
     @staticmethod
-    def test_connection(db: Session, integration_id: str) -> Dict[str, Any]:
-        conn = db.query(IntegrationConfig).filter(IntegrationConfig.id == integration_id).first()
+    def test_connection(db: Session, workspace_id: str, integration_id: str) -> Dict[str, Any]:
+        conn = (
+            db.query(IntegrationConfig)
+            .filter(IntegrationConfig.id == integration_id, IntegrationConfig.workspace_id == workspace_id)
+            .first()
+        )
         if not conn:
             raise ValueError("Integration not found")
 
-        if conn.id in ("llm_adapter", "search_intelligence"):
+        if conn.connector_key in ("llm_adapter", "search_intelligence"):
             conn.last_sync_at = datetime.datetime.utcnow()
             conn.status = "connected"
             db.commit()
@@ -116,6 +170,23 @@ class IntegrationService:
                 "status": "connected",
                 "message": f"Successfully pinged {conn.name}. Response latency: 12ms. Grounded mock adapters active.",
                 "ping_latency_ms": 12
+            }
+
+        if conn.connector_key == "openai_images":
+            if not conn.is_configured:
+                return {
+                    "integration_id": conn.id,
+                    "name": conn.name,
+                    "status": "unconfigured",
+                    "message": "Cannot verify OpenAI Images: IMAGE_PROVIDER=openai and OPENAI_IMAGE_API_KEY must be configured on the backend.",
+                    "ping_latency_ms": 0
+                }
+            return {
+                "integration_id": conn.id,
+                "name": conn.name,
+                "status": "configured_not_verified",
+                "message": "OpenAI Images credentials are configured. Verification occurs only when a user explicitly confirms a generation request, which may incur provider charges.",
+                "ping_latency_ms": 0
             }
 
         # For external ad/social connectors without credentials
